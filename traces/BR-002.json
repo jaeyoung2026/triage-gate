@@ -1,0 +1,162 @@
+{
+  "report_id": "BR-002",
+  "raw": {
+    "report_id": "BR-002",
+    "source_kind": "email",
+    "raw_text": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+    "language": null,
+    "metadata": {
+      "reporter": "designer@acmecorp.com"
+    },
+    "received_at": null
+  },
+  "extracted": {
+    "report_id": "BR-002",
+    "raw_text": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+    "source_kind": "email",
+    "language": null,
+    "fields": {
+      "preliminary_issue_kind": "feature_request",
+      "title": "dark mode toggle",
+      "body": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+      "reproduction_steps": [],
+      "observed_result": null,
+      "expected_result": null,
+      "stack_trace": null,
+      "affected_area": "dashboard",
+      "frequency_hint": null,
+      "user_impact_hint": "My eyes hurt when I use it late at night."
+    },
+    "field_sources": {
+      "title": {
+        "status": "stated",
+        "quote": "dark mode toggle",
+        "confidence": 1.0
+      },
+      "body": {
+        "status": "stated",
+        "quote": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+        "confidence": 1.0
+      },
+      "reproduction_steps": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "observed_result": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "expected_result": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "stack_trace": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "affected_area": {
+        "status": "inferred",
+        "quote": "dashboard",
+        "confidence": 0.8
+      },
+      "frequency_hint": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "user_impact_hint": {
+        "status": "stated",
+        "quote": "My eyes hurt when I use it late at night.",
+        "confidence": 1.0
+      }
+    },
+    "intake_notes": []
+  },
+  "product_context_version": "2026.04.14-seed",
+  "rule_flags_raw": [],
+  "rule_flags_extracted": [],
+  "specialist_opinions": [
+    {
+      "specialist": "severity",
+      "rationale": [
+        "The feature request for a dark mode toggle impacts visual comfort and is not functionally breaking any existing workflows.",
+        "This is a cosmetic request, not affecting any critical paths, functional defects, or causing service outage.",
+        "The impact is limited to user experience during late-night usage and does not affect key functionalities."
+      ],
+      "confidence": 0.9,
+      "severity": "S3",
+      "impact_summary": "The lack of a dark mode feature causes minor discomfort when using the dashboard at night."
+    },
+    {
+      "specialist": "risk",
+      "rationale": [
+        "The request is for a 'dark mode toggle,' which is a feature request rather than a bug.",
+        "There is no indication of issues related to authentication, payment, data loss, security, or outages.",
+        "The report does not involve any risk-related factors as it solely describes a usability improvement."
+      ],
+      "confidence": 0.95,
+      "risk_flags": [],
+      "escalation_reason": null
+    },
+    {
+      "specialist": "completeness",
+      "rationale": [
+        "The report lacks all three load-bearing fields: reproduction_steps, observed_result, and expected_result, which prevents anyone from acting on it.",
+        "While some information is provided about user impact and the affected area is inferred, it does not compensate for the missing critical details necessary to address a bug."
+      ],
+      "confidence": 0.9,
+      "missing_fields": [
+        "reproduction_steps",
+        "observed_result",
+        "expected_result",
+        "frequency_hint",
+        "stack_trace"
+      ],
+      "inferred_fields": [
+        "affected_area"
+      ],
+      "info_sufficiency": "low"
+    }
+  ],
+  "synthesizer_decision": {
+    "agreement_score": 1.0,
+    "conflicts": [],
+    "chosen_severity": "unknown",
+    "chosen_issue_kind": "feature_request",
+    "chosen_route": "pm",
+    "reasoning_notes": [
+      "intake flagged feature_request → route=pm"
+    ]
+  },
+  "overrides_applied": [],
+  "final_packet": {
+    "report_id": "BR-002",
+    "issue_kind": "feature_request",
+    "bug_confidence": 0.2,
+    "severity": "unknown",
+    "route": "pm",
+    "rationale": [
+      "The feature request for a dark mode toggle impacts visual comfort and is not functionally breaking any existing workflows.",
+      "This is a cosmetic request, not affecting any critical paths, functional defects, or causing service outage."
+    ],
+    "missing_fields": [
+      "reproduction_steps",
+      "observed_result",
+      "expected_result",
+      "frequency_hint",
+      "stack_trace"
+    ],
+    "risk_flags": [],
+    "needs_human_review": true
+  },
+  "timings_ms": {
+    "intake_ms": 5735.982458922081,
+    "specialists_parallel_ms": 2524.4581250008196,
+    "synth_decide_ms": 0.061208033002913
+  },
+  "created_at": "2026-04-14T15:59:47.910550"
+}

@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-003",
+  "source_kind": "chat",
+  "raw_text": "My dashboard only shows 1000 rows even though I have 5000 in my data. Is this broken? I'm on the free plan if that matters.",
+  "metadata": {"reporter": "analyst@startup.io", "plan": "free"}
+}

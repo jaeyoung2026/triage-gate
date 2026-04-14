@@ -1,0 +1,66 @@
+{
+  "product_name": "Mirror",
+  "version": "2026.04.14-seed",
+  "mission": "Team-facing operational dashboard for observability and billing.",
+  "scope_summary": "Mirror provides workspace-scoped dashboards, data exports, subscription billing, and SSO for Enterprise tier. It is NOT a general-purpose BI tool and does not offer on-prem deployments.",
+  "critical_paths": [
+    {
+      "name": "user_auth",
+      "keywords": ["login", "sign in", "signin", "password", "sso", "로그인", "인증"],
+      "description": "User authentication and session handling.",
+      "default_severity_floor": "S1",
+      "default_risk_flags": ["auth"]
+    },
+    {
+      "name": "payment_checkout",
+      "keywords": ["checkout", "payment", "billing", "invoice", "결제", "청구"],
+      "description": "Subscription checkout and invoice flow.",
+      "default_severity_floor": "S0",
+      "default_risk_flags": ["payment"]
+    },
+    {
+      "name": "data_export",
+      "keywords": ["export", "download csv", "json export", "데이터 내보내기"],
+      "description": "Export of workspace data to CSV/JSON.",
+      "default_severity_floor": "S1",
+      "default_risk_flags": ["data_loss"]
+    },
+    {
+      "name": "settings_save",
+      "keywords": ["settings", "save settings", "preferences", "설정 저장"],
+      "description": "Workspace and user settings persistence.",
+      "default_severity_floor": "S2",
+      "default_risk_flags": []
+    }
+  ],
+  "known_limitations": [
+    "Free plan is limited to 1000 rows per dashboard. This is by design, not a bug.",
+    "SSO is only available on the Enterprise tier. Lower tiers must use email+password.",
+    "Exports larger than 100MB are queued and delivered by email — slow download is expected."
+  ],
+  "domain_glossary": {
+    "workspace": "Top-level tenant container; every user belongs to at least one.",
+    "dashboard": "Saved view of a metric query with layout settings.",
+    "export": "Asynchronous job that materializes a dashboard to CSV/JSON."
+  },
+  "precedent_cases": [
+    {
+      "raw_excerpt": "Clicking Save in settings shows a 500 error. Page is unchanged.",
+      "verdict": "bug",
+      "severity": "S2",
+      "why": "Settings save is a real failure but scoped to one area with a retry workaround."
+    },
+    {
+      "raw_excerpt": "Can you please add dark mode to the dashboard? It would really help at night.",
+      "verdict": "feature_request",
+      "severity": "unknown",
+      "why": "Request for new capability, not a defect."
+    },
+    {
+      "raw_excerpt": "My dashboard only shows 1000 rows even though I have 5000.",
+      "verdict": "support_question",
+      "severity": "unknown",
+      "why": "Matches a known limitation (free plan cap). Route to support."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-004",
+  "source_kind": "chat",
+  "raw_text": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels. Not a big deal but it looks off. Firefox 122 on macOS.",
+  "metadata": {"reporter": "pm@acmecorp.com"}
+}

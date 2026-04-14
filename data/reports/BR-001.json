@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-001",
+  "source_kind": "github_issue",
+  "raw_text": "결제 페이지에서 카드 입력하고 완료 누르면 500 에러 떠요. 매번 그래요. 카드 문제는 아닌 거 같고 어젯밤부터 계속 이 상태예요.",
+  "metadata": {"reporter": "user@example.com"}
+}

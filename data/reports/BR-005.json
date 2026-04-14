@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-005",
+  "source_kind": "github_issue",
+  "raw_text": "Every ~15 minutes I get kicked back to the login screen while working in the dashboard. Super frustrating because I lose my query state. Happens on Chrome and Safari, both incognito and regular. Observed: redirected to /login with no warning. Expected: session stays active while I am actively using the app.",
+  "metadata": {"reporter": "pro-user@bigco.com", "plan": "enterprise"}
+}
