@@ -19,7 +19,7 @@
       "title": null,
       "body": "My dashboard only shows 1000 rows even though I have 5000 in my data. Is this broken? I'm on the free plan if that matters.",
       "reproduction_steps": [],
-      "observed_result": null,
+      "observed_result": "My dashboard only shows 1000 rows even though I have 5000 in my data.",
       "expected_result": null,
       "stack_trace": null,
       "affected_area": "dashboard",
@@ -30,7 +30,7 @@
       "title": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       },
       "body": {
         "status": "stated",
@@ -40,54 +40,54 @@
       "reproduction_steps": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       },
       "observed_result": {
-        "status": "missing",
-        "quote": null,
+        "status": "stated",
+        "quote": "My dashboard only shows 1000 rows even though I have 5000 in my data.",
         "confidence": 1.0
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "My dashboard only shows 1000 rows",
+        "quote": "dashboard",
         "confidence": 1.0
       },
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       },
       "user_impact_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.0
       }
     },
     "intake_notes": [],
     "severity_call": "S3",
     "severity_rationale": [
-      "The limitation of 1000 rows on the free plan is a known limitation and not a bug."
+      "The issue reported is a known limitation of the free plan, not a defect."
     ],
-    "impact_summary": "The user encountered the row limitation on a dashboard which is part of the expected free plan limitations.",
+    "impact_summary": "The report addresses a limitation in the dashboard row display for free plan users.",
     "detected_risks": [],
     "risk_rationale": [],
-    "info_sufficiency": "low",
+    "info_sufficiency": "medium",
     "missing_fields": [
       "reproduction_steps",
-      "observed_result",
       "expected_result"
     ],
-    "self_concerns": []
+    "self_concerns": [],
+    "narration": "The user reports their dashboard showing only 1000 rows despite having 5000 rows in the data on the free plan. This is a known limitation of the free plan, not a bug, so the severity is low. The report is lacking details on expected results or necessary steps to reproduce."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [],
@@ -100,19 +100,18 @@
     "severity": "unknown",
     "route": "support",
     "rationale": [
-      "The limitation of 1000 rows on the free plan is a known limitation and not a bug."
+      "The issue reported is a known limitation of the free plan, not a defect."
     ],
     "missing_fields": [
       "reproduction_steps",
-      "observed_result",
       "expected_result"
     ],
     "risk_flags": [],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 3994.462625007145,
-    "gate_ms": 0.06620807107537985
+    "analyze_ms": 6110.091540962458,
+    "gate_ms": 0.03479106817394495
   },
-  "created_at": "2026-04-14T17:20:30.906802"
+  "created_at": "2026-04-14T17:37:39.596526"
 }

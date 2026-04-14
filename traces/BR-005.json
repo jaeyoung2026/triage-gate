@@ -19,12 +19,13 @@
       "title": null,
       "body": "Every ~15 minutes I get kicked back to the login screen while working in the dashboard. Super frustrating because I lose my query state. Happens on Chrome and Safari, both incognito and regular. Observed: redirected to /login with no warning. Expected: session stays active while I am actively using the app.",
       "reproduction_steps": [
-        "Work in the dashboard for approximately 15 minutes."
+        "Work on the dashboard using Chrome or Safari, in either incognito or regular mode.",
+        "Every ~15 minutes, get redirected to the login screen."
       ],
       "observed_result": "redirected to /login with no warning",
       "expected_result": "session stays active while I am actively using the app",
       "stack_trace": null,
-      "affected_area": "user_auth",
+      "affected_area": "user authentication",
       "frequency_hint": "Every ~15 minutes",
       "user_impact_hint": "I lose my query state"
     },
@@ -41,7 +42,7 @@
       },
       "reproduction_steps": {
         "status": "stated",
-        "quote": "Every ~15 minutes I get kicked back to the login screen while working in the dashboard.",
+        "quote": "Every ~15 minutes I get kicked back to the login screen while working in the dashboard. Happens on Chrome and Safari, both incognito and regular.",
         "confidence": 1.0
       },
       "observed_result": {
@@ -61,7 +62,7 @@
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "kicked back to the login screen",
+        "quote": "redirected to /login with no warning",
         "confidence": 1.0
       },
       "frequency_hint": {
@@ -71,30 +72,32 @@
       },
       "user_impact_hint": {
         "status": "stated",
-        "quote": "Super frustrating because I lose my query state.",
+        "quote": "super frustrating because I lose my query state",
         "confidence": 1.0
       }
     },
     "intake_notes": [],
     "severity_call": "S1",
     "severity_rationale": [
-      "Affects user authentication and session handling (user_auth), which is a critical path with a severity floor of S1."
+      "user_auth critical path mandates at least S1 severity.",
+      "Session loss every 15 minutes significantly impacts user experience."
     ],
-    "impact_summary": "Users are logged out every ~15 minutes, disrupting their workflow and causing them to lose their query state.",
+    "impact_summary": "Frequent session timeouts causing user frustration and loss of work state in dashboard use cases.",
     "detected_risks": [
-      "auth",
-      "backend_validation"
+      "insufficient_repro"
     ],
     "risk_rationale": [
-      "Matches critical path 'user_auth' indicating severity must be at least S1.",
-      "The frequent logout indicates potential backend session duration misconfiguration or validation issue."
+      "Details are clear, but duration of 15 minutes warrants backup checks to rule out local network or system issues.",
+      "Could be device-specific yet reproducible across two major browsers."
     ],
     "info_sufficiency": "high",
     "missing_fields": [
-      "title",
-      "stack_trace"
+      "title"
     ],
-    "self_concerns": []
+    "self_concerns": [
+      "severity may be too low — impact scope unclear from raw text"
+    ],
+    "narration": "The report describes a recurring issue where the user is logged out every 15 minutes while using the dashboard, leading to loss of query state. This affects the user authentication path and is classified as a bug with S1 severity due to its frequency and user impact. Further details on the environment might be needed to rule out external factors."
   },
   "rule_flags_raw": [
     "auth"
@@ -103,31 +106,33 @@
     "critical path ['user_auth'] matched (severity already ≥ floor)"
   ],
   "conflicts": [
-    "LLM raised flags rules did not: ['backend_validation']"
+    "LLM raised flags rules did not: ['insufficient_repro']",
+    "Rules raised flags LLM did not: ['auth']",
+    "self_concern: severity may be too low — impact scope unclear from raw text"
   ],
-  "agreement_score": 0.5,
+  "agreement_score": 0.0,
   "final_packet": {
     "report_id": "BR-005",
     "issue_kind": "bug",
-    "bug_confidence": 0.5,
+    "bug_confidence": 0.0,
     "severity": "S1",
     "route": "human_engineer",
     "rationale": [
-      "Affects user authentication and session handling (user_auth), which is a critical path with a severity floor of S1."
+      "user_auth critical path mandates at least S1 severity.",
+      "Session loss every 15 minutes significantly impacts user experience."
     ],
     "missing_fields": [
-      "title",
-      "stack_trace"
+      "title"
     ],
     "risk_flags": [
       "auth",
-      "backend_validation"
+      "insufficient_repro"
     ],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 5356.652416056022,
-    "gate_ms": 0.05383300594985485
+    "analyze_ms": 7362.616459024139,
+    "gate_ms": 0.10025000665336847
   },
-  "created_at": "2026-04-14T17:20:42.512545"
+  "created_at": "2026-04-14T17:37:52.962264"
 }

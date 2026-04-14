@@ -75,6 +75,18 @@ citing specific ambiguities. These become a human-review signal. Examples:
   - "could not distinguish feature_request from bug here"
   - "report may match a known limitation I cannot fully verify"
 If you are fully confident, return an empty list.
+
+STEP 7 — NARRATION (plain-language summary for the operator)
+Write a 2-3 sentence summary of the report and your judgment in the SAME
+language as the raw text (Korean raw → Korean narration, English raw →
+English narration). Cover:
+  - what the report is about (1 sentence)
+  - your severity call and the main reason (1 sentence)
+  - the key concern, escalation reason, or information gap if any (1 sentence)
+
+Do NOT mention internal field names like severity_call, field_sources,
+critical_path, risk_flags, or self_concerns. Write as if explaining to a
+colleague in plain language. Short and direct. No bullet points.
 """
 
 

@@ -15,7 +15,7 @@
     "language": "en",
     "preliminary_issue_kind": "feature_request",
     "fields": {
-      "title": "Dark mode toggle request",
+      "title": null,
       "body": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
       "reproduction_steps": [],
       "observed_result": null,
@@ -23,13 +23,13 @@
       "stack_trace": null,
       "affected_area": "dashboard",
       "frequency_hint": null,
-      "user_impact_hint": "eyes hurt when using it late at night"
+      "user_impact_hint": "My eyes hurt when I use it late at night."
     },
     "field_sources": {
       "title": {
-        "status": "inferred",
-        "quote": "request for a dark mode toggle",
-        "confidence": 0.9
+        "status": "missing",
+        "quote": null,
+        "confidence": 1.0
       },
       "body": {
         "status": "stated",
@@ -39,35 +39,35 @@
       "reproduction_steps": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "observed_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "add a dark mode toggle to the dashboard",
-        "confidence": 0.8
+        "quote": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard.",
+        "confidence": 1.0
       },
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "user_impact_hint": {
-        "status": "stated",
+        "status": "inferred",
         "quote": "My eyes hurt when I use it late at night.",
         "confidence": 1.0
       }
@@ -75,18 +75,25 @@
     "intake_notes": [],
     "severity_call": "S3",
     "severity_rationale": [
-      "Feature request for a non-critical user experience enhancement."
+      "The request is for a non-critical feature (dark mode).",
+      "No current critical path impact; thus defaulting to lowest severity."
     ],
-    "impact_summary": "User requests a dark mode toggle on the dashboard for better ease of use at night.",
+    "impact_summary": "The user is requesting a dark mode feature for dashboards to reduce eye strain during nighttime use. Current product does not offer this feature.",
     "detected_risks": [],
-    "risk_rationale": [],
+    "risk_rationale": [
+      "Request does not involve known limitations or critical paths."
+    ],
     "info_sufficiency": "low",
     "missing_fields": [
+      "title",
       "reproduction_steps",
       "observed_result",
-      "expected_result"
+      "expected_result",
+      "stack_trace",
+      "frequency_hint"
     ],
-    "self_concerns": []
+    "self_concerns": [],
+    "narration": "A user has requested the addition of a dark mode toggle to the dashboard to alleviate eye strain during nighttime use. This is a feature request without critical path impact, so it is low severity. The report lacks detailed steps or expected outcomes, making it primarily a suggestion."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [],
@@ -99,19 +106,23 @@
     "severity": "unknown",
     "route": "pm",
     "rationale": [
-      "Feature request for a non-critical user experience enhancement."
+      "The request is for a non-critical feature (dark mode).",
+      "No current critical path impact; thus defaulting to lowest severity."
     ],
     "missing_fields": [
+      "title",
       "reproduction_steps",
       "observed_result",
-      "expected_result"
+      "expected_result",
+      "stack_trace",
+      "frequency_hint"
     ],
     "risk_flags": [],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 5196.657125023194,
-    "gate_ms": 0.04683306906372309
+    "analyze_ms": 6884.050750057213,
+    "gate_ms": 0.0724999699741602
   },
-  "created_at": "2026-04-14T17:20:26.911564"
+  "created_at": "2026-04-14T17:37:33.484581"
 }

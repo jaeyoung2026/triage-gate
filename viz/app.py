@@ -74,136 +74,123 @@ def render_single_trace(trace: dict) -> None:
 
     st.markdown(f"## {trace['report_id']}")
     st.caption(
-        f"source: {trace['raw']['source_kind']} · "
-        f"language: {analysis.get('language') or '—'} · "
-        f"product_context: `{trace['product_context_version']}`"
+        f"{trace['raw']['source_kind']} · "
+        f"{analysis.get('language') or '—'}"
     )
 
+    # 1. Raw text — context only
     with st.container(border=True):
-        st.markdown("**raw text**")
         st.text(trace["raw"]["raw_text"])
 
-    # Intake (extraction) block
-    with st.expander("intake extraction", expanded=False):
-        c1, c2 = st.columns([1, 2])
+    # 2. Hero verdict — the three things the operator needs at a glance
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown("**판정**")
+        st.markdown(f"## `{packet['issue_kind']}`")
+    with c2:
+        st.markdown("**심각도**")
+        st.markdown(
+            f"## {SEVERITY_BADGE.get(packet['severity'], packet['severity'])}"
+        )
+    with c3:
+        st.markdown("**라우트**")
+        st.markdown(
+            f"## {ROUTE_EMOJI.get(packet['route'], '⚫')} `{packet['route']}`"
+        )
+
+    # 3. LLM narration — the star of the simplified dashboard
+    narration = analysis.get("narration") or ""
+    if narration:
+        st.info(narration, icon="💬")
+
+    # 4. Gate upgrade note (if severity was pushed up by rules / critical path)
+    upgrades = [u for u in trace.get("severity_upgrades", []) if "forced" in u or "upgraded" in u]
+    if upgrades:
+        for u in upgrades:
+            st.caption(f"⬆️ 게이트 조정: {u}")
+
+    # 5. Self-concerns — the model's own doubts as a review signal
+    if analysis.get("self_concerns"):
+        for concern in analysis["self_concerns"]:
+            st.warning(concern, icon="🤔")
+
+    # 6. Review status
+    if packet["needs_human_review"]:
+        st.error("🔴 사람 검토 필요")
+    else:
+        st.success("🟢 검토 불필요")
+
+    # 7. Key flags and missing fields — minimal chips
+    chip_row = []
+    if packet["risk_flags"]:
+        chip_row.append(
+            "위험 플래그: " + " ".join(f"`{f}`" for f in packet["risk_flags"])
+        )
+    if packet["missing_fields"]:
+        chip_row.append(
+            "누락된 정보: "
+            + " ".join(f"`{m}`" for m in packet["missing_fields"][:5])
+        )
+    for row in chip_row:
+        st.markdown(row)
+
+    # 8. Technical details — collapsed by default for engineers
+    with st.expander("자세히 — 기술 세부사항", expanded=False):
+        # 4-dim analyze breakdown
+        st.markdown("**analyze — 4 dimensions**")
+        c1, c2, c3, c4 = st.columns(4)
         with c1:
+            st.markdown("*severity*")
             st.markdown(
-                f"**preliminary_issue_kind**: `{analysis['preliminary_issue_kind']}`"
+                f"{SEVERITY_BADGE.get(analysis['severity_call'], analysis['severity_call'])}"
             )
-            st.markdown(f"**language**: `{analysis.get('language') or '—'}`")
+            st.caption(analysis["impact_summary"])
         with c2:
+            st.markdown("*risk*")
+            if analysis["detected_risks"]:
+                st.markdown(" ".join(f"`{f}`" for f in analysis["detected_risks"]))
+            else:
+                st.markdown("*no flags*")
+        with c3:
+            st.markdown("*completeness*")
+            suff = analysis["info_sufficiency"]
+            badge = {"high": "🟢 high", "medium": "🟡 medium", "low": "🔴 low"}
+            st.markdown(f"{badge.get(suff, suff)}")
+        with c4:
+            st.markdown("*agreement*")
+            st.markdown(f"`{trace['agreement_score']:.2f}`")
+
+        # Rationale lists
+        if analysis["severity_rationale"]:
+            st.markdown("**severity rationale**")
+            for r in analysis["severity_rationale"]:
+                st.markdown(f"- {r}")
+        if analysis["risk_rationale"]:
+            st.markdown("**risk rationale**")
+            for r in analysis["risk_rationale"]:
+                st.markdown(f"- {r}")
+
+        # Field provenance
+        if analysis.get("field_sources"):
             st.markdown("**field provenance**")
-            for name, src in analysis.get("field_sources", {}).items():
+            for name, src in analysis["field_sources"].items():
                 if src is None:
                     continue
                 icon = STATUS_ICON.get(src["status"], "?")
                 quote = f' — *{src["quote"]}*' if src.get("quote") else ""
                 st.markdown(f"- {icon} `{name}`: {src['status']}{quote}")
 
-    # Four dimensions of the analyze() output
-    st.markdown("### analyze — 4 dimensions from one LLM call")
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        with st.container(border=True):
-            st.markdown("#### severity")
-            st.markdown(
-                f"### {SEVERITY_BADGE.get(analysis['severity_call'], analysis['severity_call'])}"
-            )
-            st.caption(f"*{analysis['impact_summary']}*")
-            for r in analysis["severity_rationale"]:
-                st.markdown(f"- {r}")
-    with c2:
-        with st.container(border=True):
-            st.markdown("#### risk")
-            if analysis["detected_risks"]:
-                chips = " ".join(f"`{f}`" for f in analysis["detected_risks"])
-                st.markdown(f"### {chips}")
-            else:
-                st.markdown("### *no flags*")
-            for r in analysis["risk_rationale"]:
-                st.markdown(f"- {r}")
-    with c3:
-        with st.container(border=True):
-            st.markdown("#### completeness")
-            suff = analysis["info_sufficiency"]
-            badge = {"high": "🟢 high", "medium": "🟡 medium", "low": "🔴 low"}
-            st.markdown(f"### {badge.get(suff, suff)}")
-            if analysis["missing_fields"]:
-                st.markdown(
-                    "**missing**: "
-                    + ", ".join(f"`{m}`" for m in analysis["missing_fields"])
-                )
-    with c4:
-        with st.container(border=True):
-            st.markdown("#### self_concerns")
-            if analysis["self_concerns"]:
-                for c in analysis["self_concerns"]:
-                    st.warning(c, icon="🤔")
-            else:
-                st.success("no concerns", icon="✅")
-
-    # Gate layer — what the programmatic safety did on top of the LLM call
-    st.markdown("### gate — programmatic safety layer")
-    c1, c2 = st.columns([1, 3])
-    with c1:
-        score = trace["agreement_score"]
-        st.metric("agreement", f"{score:.2f}")
-        if score < 0.6:
-            st.error("low")
-        elif score < 0.85:
-            st.warning("partial")
-        else:
-            st.success("high")
-    with c2:
-        if trace["severity_upgrades"]:
-            st.markdown("**severity upgrades**")
-            for u in trace["severity_upgrades"]:
-                st.info(u, icon="⬆️")
-        if trace["conflicts"]:
-            st.markdown("**conflicts / concerns**")
+        # Conflicts (rules↔LLM disagreements + self_concerns)
+        if trace.get("conflicts"):
+            st.markdown("**conflicts**")
             for c in trace["conflicts"]:
-                st.warning(c, icon="⚠️")
-        if not trace["severity_upgrades"] and not trace["conflicts"]:
-            st.success("no upgrades, no conflicts", icon="✅")
+                st.markdown(f"- ⚠️ {c}")
 
-    # Final packet
-    st.markdown("### → final packet")
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown("**issue_kind**")
-        st.markdown(f"## `{packet['issue_kind']}`")
-    with c2:
-        st.markdown("**severity**")
-        st.markdown(f"## {SEVERITY_BADGE.get(packet['severity'], packet['severity'])}")
-    with c3:
-        st.markdown("**route**")
-        st.markdown(f"## {ROUTE_EMOJI.get(packet['route'], '⚫')} `{packet['route']}`")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        review = "✓ required" if packet["needs_human_review"] else "not required"
-        st.markdown(f"**needs_human_review**: {review}")
-        st.markdown(f"**bug_confidence**: `{packet['bug_confidence']}`")
-    with c2:
-        if packet["risk_flags"]:
-            st.markdown(
-                "**risk_flags**: "
-                + ", ".join(f"`{f}`" for f in packet["risk_flags"])
-            )
-        if packet["missing_fields"]:
-            st.markdown(
-                "**missing**: "
-                + ", ".join(f"`{m}`" for m in packet["missing_fields"])
-            )
-
-    with st.expander("packet rationale"):
-        for r in packet["rationale"]:
-            st.markdown(f"- {r}")
-
-    timings = trace.get("timings_ms", {})
-    if timings:
-        parts = [f"{k}: {v:.0f}ms" for k, v in timings.items()]
-        st.caption(" · ".join(parts))
+        # Timings
+        timings = trace.get("timings_ms", {})
+        if timings:
+            parts = [f"{k}: {v:.0f}ms" for k, v in timings.items()]
+            st.caption(" · ".join(parts))
 
 
 def render_buckets(traces: list[dict]) -> None:

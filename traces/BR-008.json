@@ -13,27 +13,27 @@
   },
   "product_context_version": "2026.04.14-seed",
   "analysis": {
-    "language": null,
+    "language": "en",
     "preliminary_issue_kind": "bug",
     "fields": {
       "title": null,
       "body": "Hi Mirror security team, I think I found something concerning. When I open the 'Share dashboard' dialog and click the recipient dropdown, I can see names of users from OTHER workspaces — not just people in my own workspace. I can actually scroll through what looks like a full list of names I've never seen before. I haven't tried actually sharing with them but the fact that the dropdown is leaking member names across workspace boundaries feels like a cross-tenant leak. Please look into this ASAP.",
       "reproduction_steps": [
-        "Open the 'Share dashboard' dialog",
+        "Open 'Share dashboard' dialog",
         "Click the recipient dropdown"
       ],
-      "observed_result": "See names of users from other workspaces in the recipient dropdown.",
+      "observed_result": "Seeing names of users from other workspaces in the recipient dropdown list.",
       "expected_result": null,
       "stack_trace": null,
       "affected_area": "Share dashboard dialog",
       "frequency_hint": null,
-      "user_impact_hint": null
+      "user_impact_hint": "Potential cross-tenant leak of user information."
     },
     "field_sources": {
       "title": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.9
       },
       "body": {
         "status": "stated",
@@ -47,67 +47,67 @@
       },
       "observed_result": {
         "status": "stated",
-        "quote": "can see names of users from OTHER workspaces — not just people in my own workspace",
+        "quote": "I can see names of users from OTHER workspaces — not just people in my own workspace.",
         "confidence": 1.0
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.9
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.9
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "'Share dashboard' dialog",
-        "confidence": 1.0
+        "quote": "When I open the 'Share dashboard' dialog and click the recipient dropdown",
+        "confidence": 0.8
       },
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.9
       },
       "user_impact_hint": {
-        "status": "missing",
-        "quote": null,
-        "confidence": 0.0
+        "status": "inferred",
+        "quote": "the dropdown is leaking member names across workspace boundaries feels like a cross-tenant leak",
+        "confidence": 0.9
       }
     },
-    "intake_notes": [],
+    "intake_notes": [
+      "Potential security issue due to cross-tenant visibility of user data."
+    ],
     "severity_call": "S0",
     "severity_rationale": [
-      "The report details a potential cross-tenant data leak, which can be a significant security issue.",
-      "Given the security context and potential exposure of user information, severity is elevated to S0."
+      "Security concern due to cross-tenant information visibility."
     ],
-    "impact_summary": "Possible cross-tenant data exposure in the 'Share dashboard' dialog, leaking user names across workspace boundaries.",
+    "impact_summary": "The report describes a possible security vulnerability where user names from different workspaces are visible when sharing a dashboard, indicating a potential cross-tenant data leak.",
     "detected_risks": [
-      "data_loss",
       "security"
     ],
     "risk_rationale": [
-      "Exposure of user names across workspace boundaries suggests a potential data loss and security breach."
+      "Potential cross-tenant data leakage in the 'Share dashboard' functionality."
     ],
     "info_sufficiency": "medium",
     "missing_fields": [
       "title",
       "expected_result",
       "stack_trace",
-      "frequency_hint",
-      "user_impact_hint"
+      "frequency_hint"
     ],
     "self_concerns": [
       "severity may be too low — impact scope unclear from raw text"
-    ]
+    ],
+    "narration": "This report describes a potential security issue in the 'Share dashboard' feature where user names from different workspaces are visible. The severity is high due to the security implications of leaking user information across workspaces. The report lacks some details, such as expected behavior, that might fully confirm the scope."
   },
   "rule_flags_raw": [
     "outage"
   ],
   "severity_upgrades": [],
   "conflicts": [
-    "LLM raised flags rules did not: ['data_loss', 'security']",
+    "LLM raised flags rules did not: ['security']",
     "Rules raised flags LLM did not: ['outage']",
     "self_concern: severity may be too low — impact scope unclear from raw text"
   ],
@@ -119,26 +119,23 @@
     "severity": "S0",
     "route": "human_engineer",
     "rationale": [
-      "The report details a potential cross-tenant data leak, which can be a significant security issue.",
-      "Given the security context and potential exposure of user information, severity is elevated to S0."
+      "Security concern due to cross-tenant information visibility."
     ],
     "missing_fields": [
       "title",
       "expected_result",
       "stack_trace",
-      "frequency_hint",
-      "user_impact_hint"
+      "frequency_hint"
     ],
     "risk_flags": [
-      "data_loss",
       "outage",
       "security"
     ],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 6068.683874909766,
-    "gate_ms": 0.1966250129044056
+    "analyze_ms": 7693.19345895201,
+    "gate_ms": 0.08316605817526579
   },
-  "created_at": "2026-04-14T17:21:01.113587"
+  "created_at": "2026-04-14T17:38:14.836361"
 }

@@ -26,11 +26,7 @@
       "user_impact_hint": null
     },
     "field_sources": {
-      "title": {
-        "status": "missing",
-        "quote": null,
-        "confidence": 0.0
-      },
+      "title": null,
       "body": {
         "status": "stated",
         "quote": "안 돼요ㅠㅠ",
@@ -39,53 +35,50 @@
       "reproduction_steps": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "observed_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "affected_area": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "user_impact_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       }
     },
-    "intake_notes": [
-      "Report is too brief to take definitive action, and it's not clear what specifically '안 돼요ㅠㅠ' refers to."
-    ],
+    "intake_notes": [],
     "severity_call": "unknown",
-    "severity_rationale": [
-      "There is insufficient information to determine the severity."
-    ],
-    "impact_summary": "The report is too brief and lacks context or specifics, making it impossible to assess impact.",
+    "severity_rationale": [],
+    "impact_summary": "Insufficient information to assess impact.",
     "detected_risks": [
       "insufficient_repro",
       "unclear_scope"
     ],
     "risk_rationale": [
-      "Report does not contain enough information to determine the issue, leading to uncertain reproduction and scope."
+      "The issue description '안 돼요ㅠㅠ' is too vague to understand the scope of the problem.",
+      "Without additional information such as reproduction steps or observed outcome, it's unclear what aspect of the product might be affected."
     ],
     "info_sufficiency": "low",
     "missing_fields": [
@@ -93,22 +86,18 @@
       "reproduction_steps",
       "observed_result",
       "expected_result",
-      "stack_trace",
-      "affected_area",
-      "frequency_hint",
-      "user_impact_hint"
+      "affected_area"
     ],
     "self_concerns": [
-      "severity may be too low — impact scope unclear from raw text",
-      "report may match a known limitation I cannot fully verify"
-    ]
+      "severity may be too low — impact scope unclear from raw text"
+    ],
+    "narration": "Submitted report merely states '안 돼요ㅠㅠ', offering no concrete details. The severity is marked as unknown due to extremely limited information. Without reproduction steps or impact description, it's uncertain how to advance this issue."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [],
   "conflicts": [
     "LLM raised flags rules did not: ['insufficient_repro', 'unclear_scope']",
-    "self_concern: severity may be too low — impact scope unclear from raw text",
-    "self_concern: report may match a known limitation I cannot fully verify"
+    "self_concern: severity may be too low — impact scope unclear from raw text"
   ],
   "agreement_score": 1.0,
   "final_packet": {
@@ -118,24 +107,22 @@
     "severity": "unknown",
     "route": "needs_more_info",
     "rationale": [
-      "There is insufficient information to determine the severity."
+      "The issue description '안 돼요ㅠㅠ' is too vague to understand the scope of the problem.",
+      "Without additional information such as reproduction steps or observed outcome, it's unclear what aspect of the product might be affected."
     ],
     "missing_fields": [
       "title",
       "reproduction_steps",
       "observed_result",
       "expected_result",
-      "stack_trace",
-      "affected_area",
-      "frequency_hint",
-      "user_impact_hint"
+      "affected_area"
     ],
     "risk_flags": [],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 3203.621332999319,
-    "gate_ms": 0.029832939617335796
+    "analyze_ms": 4278.825999936089,
+    "gate_ms": 0.034374999813735485
   },
-  "created_at": "2026-04-14T17:21:04.319565"
+  "created_at": "2026-04-14T17:38:19.116026"
 }

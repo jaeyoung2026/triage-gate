@@ -196,6 +196,10 @@ class Analysis(BaseModel):
     # The model's own doubts — becomes the human-review signal.
     self_concerns: list[str]
 
+    # Plain-language summary for the operator. Written in the same language
+    # as the raw report. 2-3 sentences, no internal field names.
+    narration: str
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. TriagePacket — downstream contract

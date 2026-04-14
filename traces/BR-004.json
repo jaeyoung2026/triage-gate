@@ -17,19 +17,23 @@
     "fields": {
       "title": null,
       "body": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels. Not a big deal but it looks off. Firefox 122 on macOS.",
-      "reproduction_steps": [],
-      "observed_result": "The save button tooltip is misaligned and overlaps the search icon by a few pixels on the Settings page.",
+      "reproduction_steps": [
+        "Open the Settings page.",
+        "Hover over the save button.",
+        "Observe the tooltip alignment."
+      ],
+      "observed_result": "The tooltip is misaligned and overlaps the search icon.",
       "expected_result": null,
       "stack_trace": null,
       "affected_area": "Settings page",
       "frequency_hint": null,
-      "user_impact_hint": null
+      "user_impact_hint": "Not a big deal but it looks off."
     },
     "field_sources": {
       "title": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.9
       },
       "body": {
         "status": "stated",
@@ -37,24 +41,24 @@
         "confidence": 1.0
       },
       "reproduction_steps": {
-        "status": "missing",
-        "quote": null,
-        "confidence": 0.0
+        "status": "inferred",
+        "quote": "The save button tooltip is slightly misaligned on the right edge of the Settings page.",
+        "confidence": 0.8
       },
       "observed_result": {
-        "status": "stated",
+        "status": "inferred",
         "quote": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels.",
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "affected_area": {
         "status": "inferred",
@@ -64,29 +68,30 @@
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "user_impact_hint": {
-        "status": "missing",
-        "quote": null,
-        "confidence": 0.0
+        "status": "stated",
+        "quote": "Not a big deal but it looks off.",
+        "confidence": 1.0
       }
     },
     "intake_notes": [],
     "severity_call": "S3",
     "severity_rationale": [
-      "The issue is a cosmetic UI misalignment with low user impact.",
-      "No core functionality impacted; no critical path keywords mentioned."
+      "Cosmetic misalignment on the settings page tooltip.",
+      "Does not impact functionality or critical paths."
     ],
-    "impact_summary": "Cosmetic misalignment of tooltip on Settings page in UI.",
+    "impact_summary": "Minor UI misalignment on Settings page in Firefox 122 on macOS.",
     "detected_risks": [],
     "risk_rationale": [],
-    "info_sufficiency": "low",
+    "info_sufficiency": "medium",
     "missing_fields": [
-      "reproduction_steps",
+      "title",
       "expected_result"
     ],
-    "self_concerns": []
+    "self_concerns": [],
+    "narration": "A minor issue was reported regarding a misalignment of the tooltip on the settings page, which overlaps the search icon slightly. This is a cosmetic defect and has been assigned a low severity as it does not affect functionality. The report did not specify the expected result, but the issue is likely to be minor in nature."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [
@@ -99,22 +104,22 @@
     "issue_kind": "bug",
     "bug_confidence": 1.0,
     "severity": "S2",
-    "route": "needs_more_info",
+    "route": "human_engineer",
     "rationale": [
-      "The issue is a cosmetic UI misalignment with low user impact.",
-      "No core functionality impacted; no critical path keywords mentioned.",
+      "Cosmetic misalignment on the settings page tooltip.",
+      "Does not impact functionality or critical paths.",
       "critical path ['settings_save'] forced floor S2 (was S3)"
     ],
     "missing_fields": [
-      "reproduction_steps",
+      "title",
       "expected_result"
     ],
     "risk_flags": [],
     "needs_human_review": false
   },
   "timings_ms": {
-    "analyze_ms": 6246.338041033596,
-    "gate_ms": 0.07895799353718758
+    "analyze_ms": 6001.044208067469,
+    "gate_ms": 0.05920801777392626
   },
-  "created_at": "2026-04-14T17:20:37.155095"
+  "created_at": "2026-04-14T17:37:45.598770"
 }
