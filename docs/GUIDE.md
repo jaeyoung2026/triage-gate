@@ -60,7 +60,9 @@ EOF
     • critical path ['payment_checkout'] matched (severity already ≥ floor)
 ```
 
-Trace 전체는 `traces/BR-100.json`에 저장된다 (Streamlit viz + evolve_agent 입력).
+Trace 전체는 `traces/BR-100.json`에 저장된다 (Streamlit viz + evolve_agent 입력). Trace에는 LLM이 원문 언어로 쓴 2-3 문장 `narration`도 포함되어 대시보드에서 중심 표시된다. 예:
+
+> 보고서는 결제 페이지에서 카드 정보를 입력하고 완료를 누르면 500 에러가 발생한다는 것입니다. 결제 프로세스가 차단되므로 이 문제는 심각하며 S0로 분류됩니다. 추가 정보 없이 기대 결과는 알 수 없습니다.
 
 ### 2) 배치 triage
 
@@ -93,7 +95,7 @@ Trace 전체는 `traces/BR-100.json`에 저장된다 (Streamlit viz + evolve_age
 
 두 가지 뷰:
 
-- **single trace** — raw 원문 → intake 추출 → 4-차원 analyze 출력 → gate severity upgrade → 최종 packet을 한 화면에서 본다. agreement 게이지, severity upgrade 칩, conflict 칩, self_concerns 경고가 왜 이 route가 선택됐는지 역추적 가능하게 한다
+- **single trace** — raw 원문, 히어로 판정 카드 (issue_kind/severity/route), **LLM 해설 (narration)**, 게이트 조정 메모, self_concerns 경고, 사람 검토 필요 여부, 위험 플래그/누락 정보 칩을 한 화면에서 본다. 4-차원 세부 분석·rationale·field provenance·conflicts·timings는 "자세히" 익스팬더 안쪽 (기본 접힘)
 - **bucket overview** — 모든 trace를 route/issue_kind/severity 버킷으로 분포 표시. `auto_fix` 비율이 30%를 넘으면 경고. upgrade나 conflict가 있는 trace를 별도 섹션으로 모아서 evolve 학습 대상 강조
 
 ### 4) evolve — 진화 루프

@@ -24,6 +24,7 @@ RawReport (비정형 텍스트)
    │     - severity_call + severity_rationale
    │     - info_sufficiency (high / medium / low)
    │     - self_concerns (모델의 자기 의심)
+   │     - narration (원문과 같은 언어로 2-3 문장 해설)
    │
    ├─► gate  (프로그래매틱, LLM 아님)
    │     - 비-bug fast path (feature_request → pm, support_question → support, ...)
@@ -84,6 +85,7 @@ bug인 경우 (fast path 통과 후):
    - risk: `detected_risks`, `risk_rationale`
    - completeness: `info_sufficiency`, `missing_fields`
    - self-doubt: `self_concerns`
+   - narration: `narration` — 원문과 같은 언어로 쓴 2-3 문장 자연어 요약 (대시보드 중심 표시)
 4. **`TriagePacket`** — downstream 계약
    - `report_id`, `issue_kind`, `bug_confidence`, `severity`, `route`
    - `rationale`, `missing_fields`, `risk_flags`, `needs_human_review`
