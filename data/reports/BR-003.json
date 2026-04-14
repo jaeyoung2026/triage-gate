@@ -1,6 +1,6 @@
 {
   "report_id": "BR-003",
   "source_kind": "chat",
-  "raw_text": "My dashboard only shows 1000 rows even though I have 5000 in my data. Is this broken? I'm on the free plan if that matters.",
-  "metadata": {"reporter": "analyst@startup.io", "plan": "free"}
+  "raw_text": "대시보드에 1000개 행만 표시됩니다. 원본 데이터에는 5000개가 있는데요. 혹시 버그인가요? 참고로 무료 플랜 쓰고 있습니다.",
+  "metadata": {"reporter": "analyst@startup.kr", "plan": "free"}
 }

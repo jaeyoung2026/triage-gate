@@ -1,6 +1,6 @@
 {
   "report_id": "BR-005",
   "source_kind": "github_issue",
-  "raw_text": "Every ~15 minutes I get kicked back to the login screen while working in the dashboard. Super frustrating because I lose my query state. Happens on Chrome and Safari, both incognito and regular. Observed: redirected to /login with no warning. Expected: session stays active while I am actively using the app.",
-  "metadata": {"reporter": "pro-user@bigco.com", "plan": "enterprise"}
+  "raw_text": "대시보드에서 작업 중에 15분 정도마다 로그인 화면으로 튕깁니다. 쿼리 상태가 매번 날아가서 다시 입력해야 하니까 너무 불편해요. Chrome이랑 Safari 둘 다, 시크릿 모드랑 일반 모드 둘 다 동일한 증상입니다. 관찰: 아무 경고 없이 /login으로 리다이렉트됨. 기대: 사용 중에는 세션이 유지되어야 함.",
+  "metadata": {"reporter": "pro-user@bigco.co.kr", "plan": "enterprise"}
 }

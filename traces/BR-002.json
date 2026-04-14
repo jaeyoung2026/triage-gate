@@ -3,86 +3,83 @@
   "raw": {
     "report_id": "BR-002",
     "source_kind": "email",
-    "raw_text": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+    "raw_text": "Mirror 팀께. 대시보드에 다크 모드 토글을 추가해주시면 정말 좋을 것 같아요. 밤늦게 사용하면 눈이 너무 피로해서요. 검토 부탁드립니다. 감사합니다!",
     "language": null,
     "metadata": {
-      "reporter": "designer@acmecorp.com"
+      "reporter": "designer@acmecorp.co.kr"
     },
     "received_at": null
   },
   "product_context_version": "2026.04.14-seed",
   "analysis": {
-    "language": "en",
+    "language": "Korean",
     "preliminary_issue_kind": "feature_request",
     "fields": {
       "title": null,
-      "body": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+      "body": "Mirror 팀께. 대시보드에 다크 모드 토글을 추가해주시면 정말 좋을 것 같아요. 밤늦게 사용하면 눈이 너무 피로해서요. 검토 부탁드립니다. 감사합니다!",
       "reproduction_steps": [],
       "observed_result": null,
       "expected_result": null,
       "stack_trace": null,
-      "affected_area": "dashboard",
+      "affected_area": null,
       "frequency_hint": null,
-      "user_impact_hint": "My eyes hurt when I use it late at night."
+      "user_impact_hint": "밤늦게 사용하면 눈이 너무 피로해서요."
     },
     "field_sources": {
       "title": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "body": {
         "status": "stated",
-        "quote": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
+        "quote": "Mirror 팀께. 대시보드에 다크 모드 토글을 추가해주시면 정말 좋을 것 같아요. 밤늦게 사용하면 눈이 너무 피로해서요. 검토 부탁드립니다. 감사합니다!",
         "confidence": 1.0
       },
       "reproduction_steps": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "observed_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "expected_result": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "affected_area": {
-        "status": "inferred",
-        "quote": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard.",
-        "confidence": 1.0
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.9
       },
       "frequency_hint": {
         "status": "missing",
         "quote": null,
-        "confidence": 1.0
+        "confidence": 0.9
       },
       "user_impact_hint": {
         "status": "inferred",
-        "quote": "My eyes hurt when I use it late at night.",
+        "quote": "밤늦게 사용하면 눈이 너무 피로해서요.",
         "confidence": 1.0
       }
     },
     "intake_notes": [],
     "severity_call": "S3",
     "severity_rationale": [
-      "The request is for a non-critical feature (dark mode).",
-      "No current critical path impact; thus defaulting to lowest severity."
+      "This request is for a UI feature addition, which is usually classified as low severity (S3) as it does not impede existing functionality."
     ],
-    "impact_summary": "The user is requesting a dark mode feature for dashboards to reduce eye strain during nighttime use. Current product does not offer this feature.",
+    "impact_summary": "Request for a dark mode toggle to reduce eye strain during late-night use.",
     "detected_risks": [],
-    "risk_rationale": [
-      "Request does not involve known limitations or critical paths."
-    ],
+    "risk_rationale": [],
     "info_sufficiency": "low",
     "missing_fields": [
       "title",
@@ -90,10 +87,11 @@
       "observed_result",
       "expected_result",
       "stack_trace",
+      "affected_area",
       "frequency_hint"
     ],
     "self_concerns": [],
-    "narration": "A user has requested the addition of a dark mode toggle to the dashboard to alleviate eye strain during nighttime use. This is a feature request without critical path impact, so it is low severity. The report lacks detailed steps or expected outcomes, making it primarily a suggestion."
+    "narration": "This report is a feature request for adding a dark mode toggle to the dashboard to reduce eye strain during late-night use. The severity is classified as low because it does not interfere with existing functionality but rather requests an enhancement. No further information is needed for this type of request."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [],
@@ -106,8 +104,7 @@
     "severity": "unknown",
     "route": "pm",
     "rationale": [
-      "The request is for a non-critical feature (dark mode).",
-      "No current critical path impact; thus defaulting to lowest severity."
+      "This request is for a UI feature addition, which is usually classified as low severity (S3) as it does not impede existing functionality."
     ],
     "missing_fields": [
       "title",
@@ -115,14 +112,15 @@
       "observed_result",
       "expected_result",
       "stack_trace",
+      "affected_area",
       "frequency_hint"
     ],
     "risk_flags": [],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 6884.050750057213,
-    "gate_ms": 0.0724999699741602
+    "analyze_ms": 6291.5979999816045,
+    "gate_ms": 0.043042004108428955
   },
-  "created_at": "2026-04-14T17:37:33.484581"
+  "created_at": "2026-04-14T17:42:03.846633"
 }

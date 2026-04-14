@@ -1,6 +1,6 @@
 {
   "report_id": "BR-002",
   "source_kind": "email",
-  "raw_text": "Hi Mirror team, it would be really nice if you could add a dark mode toggle to the dashboard. My eyes hurt when I use it late at night. Would really appreciate it. Thanks!",
-  "metadata": {"reporter": "designer@acmecorp.com"}
+  "raw_text": "Mirror 팀께. 대시보드에 다크 모드 토글을 추가해주시면 정말 좋을 것 같아요. 밤늦게 사용하면 눈이 너무 피로해서요. 검토 부탁드립니다. 감사합니다!",
+  "metadata": {"reporter": "designer@acmecorp.co.kr"}
 }

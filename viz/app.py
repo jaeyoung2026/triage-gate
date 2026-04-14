@@ -54,8 +54,8 @@ STATUS_ICON = {
 }
 
 
-@st.cache_data
 def load_traces(trace_dir_str: str) -> list[dict]:
+    """No caching — trace files are small (10× small JSON), load fresh each run."""
     traces_dir = Path(trace_dir_str)
     out: list[dict] = []
     for path in sorted(traces_dir.glob("*.json")):

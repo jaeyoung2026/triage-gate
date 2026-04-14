@@ -1,6 +1,6 @@
 {
   "report_id": "BR-006",
   "source_kind": "github_issue",
-  "raw_text": "When I try to export my dashboard to CSV the download starts but the file is 0 bytes. Tried with three different dashboards (analytics, revenue, user-activity), same result every time. Chrome 124 and Safari 17.4, both logged in normally. The browser console shows 'GET /api/export/csv 200' so it's not a network error — the response body is just empty. Expected the CSV to contain the dashboard data.",
-  "metadata": {"reporter": "data-analyst@acmecorp.com", "plan": "pro"}
+  "raw_text": "대시보드를 CSV로 내보내기 할 때 다운로드는 시작되는데 파일이 0바이트로 저장됩니다. analytics, revenue, user-activity 세 개 대시보드에서 다 똑같은 증상이에요. Chrome 124랑 Safari 17.4 모두 테스트했고 로그인 상태는 정상입니다. 브라우저 콘솔에 'GET /api/export/csv 200'으로 찍히니까 네트워크 에러는 아닌 것 같고 응답 바디가 그냥 비어 있습니다. 원래는 대시보드 데이터가 CSV 안에 들어가 있어야 합니다.",
+  "metadata": {"reporter": "data-analyst@acmecorp.co.kr", "plan": "pro"}
 }

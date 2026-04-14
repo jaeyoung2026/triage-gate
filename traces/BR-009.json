@@ -70,15 +70,16 @@
     },
     "intake_notes": [],
     "severity_call": "unknown",
-    "severity_rationale": [],
-    "impact_summary": "Insufficient information to assess impact.",
+    "severity_rationale": [
+      "Insufficient information to determine impact or affected area."
+    ],
+    "impact_summary": "Cannot assess due to insufficient detail in the report.",
     "detected_risks": [
       "insufficient_repro",
       "unclear_scope"
     ],
     "risk_rationale": [
-      "The issue description '안 돼요ㅠㅠ' is too vague to understand the scope of the problem.",
-      "Without additional information such as reproduction steps or observed outcome, it's unclear what aspect of the product might be affected."
+      "Very minimal information provided, no clear indication of issue type or scope."
     ],
     "info_sufficiency": "low",
     "missing_fields": [
@@ -86,18 +87,16 @@
       "reproduction_steps",
       "observed_result",
       "expected_result",
+      "stack_trace",
       "affected_area"
     ],
-    "self_concerns": [
-      "severity may be too low — impact scope unclear from raw text"
-    ],
-    "narration": "Submitted report merely states '안 돼요ㅠㅠ', offering no concrete details. The severity is marked as unknown due to extremely limited information. Without reproduction steps or impact description, it's uncertain how to advance this issue."
+    "self_concerns": [],
+    "narration": "The report contains the phrase '안 돼요ㅠㅠ', but lacks details on the problem. We cannot assess severity or triage appropriately due to insufficient information."
   },
   "rule_flags_raw": [],
   "severity_upgrades": [],
   "conflicts": [
-    "LLM raised flags rules did not: ['insufficient_repro', 'unclear_scope']",
-    "self_concern: severity may be too low — impact scope unclear from raw text"
+    "LLM raised flags rules did not: ['insufficient_repro', 'unclear_scope']"
   ],
   "agreement_score": 1.0,
   "final_packet": {
@@ -107,22 +106,22 @@
     "severity": "unknown",
     "route": "needs_more_info",
     "rationale": [
-      "The issue description '안 돼요ㅠㅠ' is too vague to understand the scope of the problem.",
-      "Without additional information such as reproduction steps or observed outcome, it's unclear what aspect of the product might be affected."
+      "Insufficient information to determine impact or affected area."
     ],
     "missing_fields": [
       "title",
       "reproduction_steps",
       "observed_result",
       "expected_result",
+      "stack_trace",
       "affected_area"
     ],
     "risk_flags": [],
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 4278.825999936089,
-    "gate_ms": 0.034374999813735485
+    "analyze_ms": 3074.1300830850378,
+    "gate_ms": 0.030292081646621227
   },
-  "created_at": "2026-04-14T17:38:19.116026"
+  "created_at": "2026-04-14T17:42:47.507340"
 }

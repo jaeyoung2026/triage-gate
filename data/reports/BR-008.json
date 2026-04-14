@@ -1,6 +1,6 @@
 {
   "report_id": "BR-008",
   "source_kind": "email",
-  "raw_text": "Hi Mirror security team, I think I found something concerning. When I open the 'Share dashboard' dialog and click the recipient dropdown, I can see names of users from OTHER workspaces — not just people in my own workspace. I can actually scroll through what looks like a full list of names I've never seen before. I haven't tried actually sharing with them but the fact that the dropdown is leaking member names across workspace boundaries feels like a cross-tenant leak. Please look into this ASAP.",
+  "raw_text": "Mirror 보안팀께, 조금 걱정되는 걸 발견해서 제보합니다. '대시보드 공유' 다이얼로그를 열고 수신자 드롭다운을 클릭하면 제 워크스페이스가 아닌 다른 워크스페이스의 사용자 이름들이 보입니다. 한 번도 본 적 없는 이름들이 쭉 내려와서 전체 목록처럼 보이는데요. 실제로 공유를 시도한 건 아니지만 드롭다운이 워크스페이스 경계를 넘어서 멤버 이름을 노출하는 자체가 cross-tenant 누출로 보입니다. 가능한 빨리 확인 부탁드립니다.",
   "metadata": {"reporter": "security-researcher@hackerone.example", "severity_hint": "high"}
 }

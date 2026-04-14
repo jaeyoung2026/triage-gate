@@ -17,89 +17,86 @@
     "language": "ko",
     "preliminary_issue_kind": "bug",
     "fields": {
-      "title": "긴급! Mirror 로그인 문제",
-      "body": "긴급! 지금 저희 팀 5명 전원이 Mirror 로그인이 안 됩니다. 다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다. 방금 전 10분 전까지 멀쩡히 쓰고 있었는데 갑자기 전체가 막혔어요. 비밀번호 맞는지도 확인했고 incognito도 해봤는데 소용없습니다.",
+      "title": "긴급! Mirror 로그인이 안 됩니다",
+      "body": "저희 팀 5명 전원이 Mirror 로그인이 안 됩니다. 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다. 방금 전 10분 전까지 멀쩡히 쓰고 있었는데 갑자기 전체가 막혔어요. 비밀번호 맞는지도 확인했고 incognito도 해봤는데 소용없습니다.",
       "reproduction_steps": [
-        "복잡한 로그인 후 'Session expired, please sign in again' 메시지 확인",
-        "로그인 버튼 클릭",
-        "위 화면 반복"
+        "로그인 화면에서 이메일과 비밀번호 입력 후 로그인 버튼 클릭"
       ],
-      "observed_result": "'Session expired, please sign in again' 메시지만 뜨고 로그인 불가",
-      "expected_result": "정상적으로 로그인되어야 함",
+      "observed_result": "Session expired, please sign in again 메시지만 계속 표시되고 로그인 상태 유지 안됨",
+      "expected_result": null,
       "stack_trace": null,
-      "affected_area": "로그인",
-      "frequency_hint": "지속적",
-      "user_impact_hint": "팀 전원 불가"
+      "affected_area": "로그인 및 인증",
+      "frequency_hint": "저희 팀 5명 전원",
+      "user_impact_hint": "저희 팀 5명 전원"
     },
     "field_sources": {
       "title": {
         "status": "inferred",
-        "quote": "긴급! Mirror 로그인 문제",
+        "quote": "🚨 긴급! 지금 저희 팀 5명 전원이 Mirror 로그인이 안 됩니다",
         "confidence": 1.0
       },
       "body": {
         "status": "stated",
-        "quote": "긴급! 지금 저희 팀 5명 전원이 Mirror 로그인이 안 됩니다. 다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다. 방금 전 10분 전까지 멀쩡히 쓰고 있었는데 갑자기 전체가 막혔어요. 비밀번호 맞는지도 확인했고 incognito도 해봤는데 소용없습니다.",
+        "quote": "저희 팀 5명 전원이 Mirror 로그인이 안 됩니다. 다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다. 방금 전 10분 전까지 멀쩡히 쓰고 있었는데 갑자기 전체가 막혔어요. 비밀번호 맞는지도 확인했고 incognito도 해봤는데 소용없습니다.",
         "confidence": 1.0
       },
       "reproduction_steps": {
         "status": "inferred",
-        "quote": "다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다.",
-        "confidence": 0.5
+        "quote": "로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다",
+        "confidence": 0.8
       },
       "observed_result": {
         "status": "stated",
-        "quote": "다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다.",
+        "quote": "'Session expired, please sign in again' 메시지만 계속 뜨고",
         "confidence": 1.0
       },
       "expected_result": {
-        "status": "inferred",
-        "quote": "로그인이 안 됩니다.",
-        "confidence": 0.5
+        "status": "missing",
+        "quote": null,
+        "confidence": 1.0
       },
       "stack_trace": {
         "status": "missing",
         "quote": null,
-        "confidence": 0.0
+        "confidence": 1.0
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "Mirror 로그인이 안 됩니다",
+        "quote": "로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다",
         "confidence": 1.0
       },
       "frequency_hint": {
-        "status": "inferred",
-        "quote": "지금 저희 팀 5명 전원이",
-        "confidence": 0.5
+        "status": "stated",
+        "quote": "저희 팀 5명 전원",
+        "confidence": 1.0
       },
       "user_impact_hint": {
-        "status": "inferred",
-        "quote": "지금 저희 팀 5명 전원이 Mirror 로그인이 안 됩니다.",
+        "status": "stated",
+        "quote": "저희 팀 5명 전원",
         "confidence": 1.0
       }
     },
-    "intake_notes": [
-      "Team-wide login issue reported"
-    ],
+    "intake_notes": [],
     "severity_call": "S1",
     "severity_rationale": [
-      "This issue affects user_auth, triggering an S1 severity floor."
+      "user_auth recognized, severity floor S1 applies"
     ],
-    "impact_summary": "Team of 5 cannot log into Mirror due to session expiration error.",
+    "impact_summary": "The report describes a login issue affecting the entire team (5 users), making it impossible to access the service due to session expiration messages.",
     "detected_risks": [
       "auth"
     ],
     "risk_rationale": [
-      "Affects user_auth, impacting multiple users simultaneously."
+      "Issue related directly to user authentication process."
     ],
     "info_sufficiency": "medium",
     "missing_fields": [
+      "expected_result",
       "stack_trace"
     ],
     "self_concerns": [
       "severity may be too low — impact scope unclear from raw text"
     ],
-    "narration": "보고된 문제는 Mirror 로그인이 안 되고 'Session expired, please sign in again' 메시지가 나타나 반복되는 것입니다. 이 문제는 사용자 인증 영역에 영향을 미쳐 심각도 S1으로 분류되었습니다. 문제의 원인을 정확히 파악하기 위해 추가적인 정보가 필요할 수 있습니다."
+    "narration": "The report describes an issue where 5 users are unable to log into Mirror, receiving 'Session expired, please sign in again' messages repeatedly. The problem appears to relate to a bug in user authentication, setting its severity at S1 due to the user_auth critical path. There is a concern the severity might be underestimated due to limited scope details in the report."
   },
   "rule_flags_raw": [
     "auth"
@@ -118,9 +115,10 @@
     "severity": "S1",
     "route": "human_engineer",
     "rationale": [
-      "This issue affects user_auth, triggering an S1 severity floor."
+      "user_auth recognized, severity floor S1 applies"
     ],
     "missing_fields": [
+      "expected_result",
       "stack_trace"
     ],
     "risk_flags": [
@@ -129,8 +127,8 @@
     "needs_human_review": true
   },
   "timings_ms": {
-    "analyze_ms": 7259.3891670694575,
-    "gate_ms": 0.11750007979571819
+    "analyze_ms": 8074.1115839919075,
+    "gate_ms": 0.0837499974295497
   },
-  "created_at": "2026-04-14T17:38:07.141169"
+  "created_at": "2026-04-14T17:42:37.987035"
 }
