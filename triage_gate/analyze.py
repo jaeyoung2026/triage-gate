@@ -1,6 +1,5 @@
 """analyze — single LLM call that does extraction + all judgment dimensions.
 
-Replaces the previous 4-call pipeline (intake + severity + risk + completeness).
 The output is an Analysis which gate() turns into a TriagePacket.
 
 Safety note: the prompt instructs the model to respect critical_path severity

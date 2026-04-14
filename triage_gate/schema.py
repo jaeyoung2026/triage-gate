@@ -1,4 +1,4 @@
-"""Triage-gate schemas (post-simplification).
+"""Triage-gate schemas.
 
 Four primary models:
 
@@ -7,12 +7,7 @@ Four primary models:
     Analysis         one LLM call output — extraction + all judgment dimensions
     TriagePacket     final downstream contract (issue_kind / severity / route)
 
-Plus Trace (audit trail) and OutcomeRecord (future feedback).
-
-This version collapses the previous 4-LLM pipeline (intake + severity + risk +
-completeness + synthesizer + decide) into a single `analyze()` call that
-produces an Analysis, followed by a programmatic `gate()` that applies rules
-and critical_path safety floors and builds the final TriagePacket.
+Plus Trace (audit trail) and OutcomeRecord (reserved for feedback).
 """
 
 from __future__ import annotations

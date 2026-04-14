@@ -1,4 +1,4 @@
-"""evolve_agent v1 — pattern-based improvement suggestions from trace history.
+"""evolve_agent — pattern-based improvement suggestions from trace history.
 
 Reads every Trace in traces/ and surfaces four kinds of patterns:
 
@@ -10,9 +10,6 @@ Reads every Trace in traces/ and surfaces four kinds of patterns:
 Output is a markdown report printed to stdout. Every suggestion names the
 file that should change (product_context.json vs rules.py vs analyze prompt),
 so a human reviewer can act without re-deriving the context.
-
-V1 stub: no LLM, pattern-matched. A later version will consume real
-OutcomeRecord feedback and use an LLM to draft diffs directly.
 """
 
 from __future__ import annotations
