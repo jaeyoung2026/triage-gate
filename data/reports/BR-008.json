@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-008",
+  "source_kind": "email",
+  "raw_text": "Hi Mirror security team, I think I found something concerning. When I open the 'Share dashboard' dialog and click the recipient dropdown, I can see names of users from OTHER workspaces — not just people in my own workspace. I can actually scroll through what looks like a full list of names I've never seen before. I haven't tried actually sharing with them but the fact that the dropdown is leaking member names across workspace boundaries feels like a cross-tenant leak. Please look into this ASAP.",
+  "metadata": {"reporter": "security-researcher@hackerone.example", "severity_hint": "high"}
+}

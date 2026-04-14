@@ -44,7 +44,4 @@ def get_client():
     return OpenAI()
 
 
-INTAKE_MODEL = os.environ.get("TRIAGE_INTAKE_MODEL", "gpt-4o-mini")
-SEVERITY_MODEL = os.environ.get("TRIAGE_SEVERITY_MODEL", "gpt-4o")
-RISK_MODEL = os.environ.get("TRIAGE_RISK_MODEL", "gpt-4o")
-COMPLETENESS_MODEL = os.environ.get("TRIAGE_COMPLETENESS_MODEL", "gpt-4o-mini")
+ANALYZE_MODEL = os.environ.get("TRIAGE_ANALYZE_MODEL", "gpt-4o")

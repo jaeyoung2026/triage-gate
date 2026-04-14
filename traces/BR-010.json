@@ -1,0 +1,127 @@
+{
+  "report_id": "BR-010",
+  "raw": {
+    "report_id": "BR-010",
+    "source_kind": "email",
+    "raw_text": "Subject: 영수증 문의\n\n안녕하세요. 저희 팀이 지난주 금요일에 Pro 플랜으로 업그레이드 결제했는데요, 아직까지 영수증 이메일이 오지 않았습니다. 스팸함도 확인했고 다른 이메일 주소도 확인했는데 어디에도 없네요. 카드는 분명히 빠져나간 걸 확인했고 청구서에 Mirror 라고 찍혀 있습니다. 벌써 3일째라 재무팀이 재촉하고 있습니다. 확인 부탁드립니다.",
+    "language": null,
+    "metadata": {
+      "reporter": "finance@startup.kr",
+      "plan": "pro",
+      "charged": true
+    },
+    "received_at": null
+  },
+  "product_context_version": "2026.04.14-seed",
+  "analysis": {
+    "language": "ko",
+    "preliminary_issue_kind": "support_question",
+    "fields": {
+      "title": "영수증 문의",
+      "body": "안녕하세요. 저희 팀이 지난주 금요일에 Pro 플랜으로 업그레이드 결제했는데요, 아직까지 영수증 이메일이 오지 않았습니다. 스팸함도 확인했고 다른 이메일 주소도 확인했는데 어디에도 없네요. 카드는 분명히 빠져나간 걸 확인했고 청구서에 Mirror 라고 찍혀 있습니다. 벌써 3일째라 재무팀이 재촉하고 있습니다. 확인 부탁드립니다.",
+      "reproduction_steps": [],
+      "observed_result": "영수증 이메일이 오지 않음",
+      "expected_result": "업그레이드 후 영수증 이메일 수신",
+      "stack_trace": null,
+      "affected_area": "payment_checkout",
+      "frequency_hint": "3일 동안 받지 못함",
+      "user_impact_hint": "재무팀이 재촉하고 있습니다"
+    },
+    "field_sources": {
+      "title": {
+        "status": "stated",
+        "quote": null,
+        "confidence": 1.0
+      },
+      "body": {
+        "status": "stated",
+        "quote": null,
+        "confidence": 1.0
+      },
+      "reproduction_steps": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 1.0
+      },
+      "observed_result": {
+        "status": "stated",
+        "quote": "아직까지 영수증 이메일이 오지 않았습니다",
+        "confidence": 1.0
+      },
+      "expected_result": {
+        "status": "stated",
+        "quote": "업그레이드 결제했는데요",
+        "confidence": 1.0
+      },
+      "stack_trace": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 1.0
+      },
+      "affected_area": {
+        "status": "inferred",
+        "quote": "Pro 플랜으로 업그레이드 결제했는데요, 아직까지 영수증 이메일이 오지 않았습니다.",
+        "confidence": 1.0
+      },
+      "frequency_hint": {
+        "status": "stated",
+        "quote": "벌써 3일째라",
+        "confidence": 1.0
+      },
+      "user_impact_hint": {
+        "status": "stated",
+        "quote": "재무팀이 재촉하고 있습니다",
+        "confidence": 1.0
+      }
+    },
+    "intake_notes": [],
+    "severity_call": "S0",
+    "severity_rationale": [
+      "Issue relates to 'payment_checkout', which has a severity floor of S0."
+    ],
+    "impact_summary": "Receipt emails for a subscription upgrade have not been received for three days, impacting the finance team of a user.",
+    "detected_risks": [
+      "outage"
+    ],
+    "risk_rationale": [
+      "Payment-related emails not being sent or received could indicate broader issues with the payment system."
+    ],
+    "info_sufficiency": "medium",
+    "missing_fields": [
+      "reproduction_steps"
+    ],
+    "self_concerns": [
+      "severity may be too low — impact scope unclear from raw text"
+    ]
+  },
+  "rule_flags_raw": [
+    "payment"
+  ],
+  "severity_upgrades": [],
+  "conflicts": [
+    "LLM raised flags rules did not: ['outage']",
+    "Rules raised flags LLM did not: ['payment']",
+    "self_concern: severity may be too low — impact scope unclear from raw text"
+  ],
+  "agreement_score": 1.0,
+  "final_packet": {
+    "report_id": "BR-010",
+    "issue_kind": "support_question",
+    "bug_confidence": 0.2,
+    "severity": "unknown",
+    "route": "support",
+    "rationale": [
+      "Issue relates to 'payment_checkout', which has a severity floor of S0."
+    ],
+    "missing_fields": [
+      "reproduction_steps"
+    ],
+    "risk_flags": [],
+    "needs_human_review": true
+  },
+  "timings_ms": {
+    "analyze_ms": 10519.682415993884,
+    "gate_ms": 0.03750005271285772
+  },
+  "created_at": "2026-04-14T17:21:14.839907"
+}

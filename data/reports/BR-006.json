@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-006",
+  "source_kind": "github_issue",
+  "raw_text": "When I try to export my dashboard to CSV the download starts but the file is 0 bytes. Tried with three different dashboards (analytics, revenue, user-activity), same result every time. Chrome 124 and Safari 17.4, both logged in normally. The browser console shows 'GET /api/export/csv 200' so it's not a network error — the response body is just empty. Expected the CSV to contain the dashboard data.",
+  "metadata": {"reporter": "data-analyst@acmecorp.com", "plan": "pro"}
+}

@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-010",
+  "source_kind": "email",
+  "raw_text": "Subject: 영수증 문의\n\n안녕하세요. 저희 팀이 지난주 금요일에 Pro 플랜으로 업그레이드 결제했는데요, 아직까지 영수증 이메일이 오지 않았습니다. 스팸함도 확인했고 다른 이메일 주소도 확인했는데 어디에도 없네요. 카드는 분명히 빠져나간 걸 확인했고 청구서에 Mirror 라고 찍혀 있습니다. 벌써 3일째라 재무팀이 재촉하고 있습니다. 확인 부탁드립니다.",
+  "metadata": {"reporter": "finance@startup.kr", "plan": "pro", "charged": true}
+}

@@ -10,17 +10,15 @@
     },
     "received_at": null
   },
-  "extracted": {
-    "report_id": "BR-004",
-    "raw_text": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels. Not a big deal but it looks off. Firefox 122 on macOS.",
-    "source_kind": "chat",
-    "language": null,
+  "product_context_version": "2026.04.14-seed",
+  "analysis": {
+    "language": "en",
+    "preliminary_issue_kind": "bug",
     "fields": {
-      "preliminary_issue_kind": "bug",
-      "title": "Misaligned save button tooltip on Settings page",
+      "title": null,
       "body": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels. Not a big deal but it looks off. Firefox 122 on macOS.",
       "reproduction_steps": [],
-      "observed_result": "The save button tooltip overlaps the search icon by a few pixels.",
+      "observed_result": "The save button tooltip is misaligned and overlaps the search icon by a few pixels on the Settings page.",
       "expected_result": null,
       "stack_trace": null,
       "affected_area": "Settings page",
@@ -29,9 +27,9 @@
     },
     "field_sources": {
       "title": {
-        "status": "inferred",
-        "quote": "Misaligned save button tooltip on Settings page",
-        "confidence": 0.9
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
       },
       "body": {
         "status": "stated",
@@ -45,7 +43,7 @@
       },
       "observed_result": {
         "status": "stated",
-        "quote": "The save button tooltip overlaps the search icon by a few pixels.",
+        "quote": "The save button tooltip is slightly misaligned on the right edge of the Settings page. It overlaps the search icon by a few pixels.",
         "confidence": 1.0
       },
       "expected_result": {
@@ -60,7 +58,7 @@
       },
       "affected_area": {
         "status": "inferred",
-        "quote": "Settings page",
+        "quote": "The save button tooltip is slightly misaligned on the right edge of the Settings page.",
         "confidence": 0.9
       },
       "frequency_hint": {
@@ -74,89 +72,49 @@
         "confidence": 0.0
       }
     },
-    "intake_notes": []
-  },
-  "product_context_version": "2026.04.14-seed",
-  "rule_flags_raw": [],
-  "rule_flags_extracted": [],
-  "specialist_opinions": [
-    {
-      "specialist": "severity",
-      "rationale": [
-        "The issue described is purely cosmetic, affecting only the positioning of a tooltip.",
-        "There is no indication that it affects functionality, data integrity, or user operations.",
-        "It does not block any user actions or core workflows."
-      ],
-      "confidence": 1.0,
-      "severity": "S3",
-      "impact_summary": "A minor UI glitch affecting the appearance of the settings page."
-    },
-    {
-      "specialist": "risk",
-      "rationale": [
-        "The issue described is purely a UI/UX concern with the alignment of a tooltip and does not impact authentication or data security.",
-        "There is no mention of payment processes, data integrity, system outages, or unauthorized access.",
-        "The report provides specific details about the problem and does not indicate any unclear scope or insufficient repro."
-      ],
-      "confidence": 1.0,
-      "risk_flags": [],
-      "escalation_reason": null
-    },
-    {
-      "specialist": "completeness",
-      "rationale": [
-        "The report is missing both reproduction_steps and expected_result, which are essential for understanding how to replicate the issue and what the correct behavior should be.",
-        "While there are some stated details in the body and observed_result, without the load-bearing fields, downstream teams cannot act safely on the report."
-      ],
-      "confidence": 0.95,
-      "missing_fields": [
-        "reproduction_steps",
-        "expected_result"
-      ],
-      "inferred_fields": [
-        "title",
-        "affected_area"
-      ],
-      "info_sufficiency": "low"
-    }
-  ],
-  "synthesizer_decision": {
-    "agreement_score": 0.85,
-    "conflicts": [
-      "critical path ['settings_save'] forces floor S2 (was S3)"
+    "intake_notes": [],
+    "severity_call": "S3",
+    "severity_rationale": [
+      "The issue is a cosmetic UI misalignment with low user impact.",
+      "No core functionality impacted; no critical path keywords mentioned."
     ],
-    "chosen_severity": "S2",
-    "chosen_issue_kind": "bug",
-    "chosen_route": "needs_more_info",
-    "reasoning_notes": [
-      "severity_agent proposed S3",
-      "critical path 'settings_save' enforces severity floor S2",
-      "route matrix: severity=S2, danger=False, info=low → needs_more_info"
-    ]
+    "impact_summary": "Cosmetic misalignment of tooltip on Settings page in UI.",
+    "detected_risks": [],
+    "risk_rationale": [],
+    "info_sufficiency": "low",
+    "missing_fields": [
+      "reproduction_steps",
+      "expected_result"
+    ],
+    "self_concerns": []
   },
-  "overrides_applied": [],
+  "rule_flags_raw": [],
+  "severity_upgrades": [
+    "critical path ['settings_save'] forced floor S2 (was S3)"
+  ],
+  "conflicts": [],
+  "agreement_score": 1.0,
   "final_packet": {
     "report_id": "BR-004",
     "issue_kind": "bug",
-    "bug_confidence": 0.85,
+    "bug_confidence": 1.0,
     "severity": "S2",
     "route": "needs_more_info",
     "rationale": [
-      "The issue described is purely cosmetic, affecting only the positioning of a tooltip.",
-      "There is no indication that it affects functionality, data integrity, or user operations.",
-      "critical path 'settings_save' enforces severity floor S2"
+      "The issue is a cosmetic UI misalignment with low user impact.",
+      "No core functionality impacted; no critical path keywords mentioned.",
+      "critical path ['settings_save'] forced floor S2 (was S3)"
     ],
     "missing_fields": [
       "reproduction_steps",
       "expected_result"
     ],
     "risk_flags": [],
-    "needs_human_review": true
+    "needs_human_review": false
   },
   "timings_ms": {
-    "intake_ms": 6003.383458941244,
-    "specialists_parallel_ms": 2622.600374976173,
-    "synth_decide_ms": 0.0892080133780837
+    "analyze_ms": 6246.338041033596,
+    "gate_ms": 0.07895799353718758
   },
-  "created_at": "2026-04-14T16:00:04.463256"
+  "created_at": "2026-04-14T17:20:37.155095"
 }

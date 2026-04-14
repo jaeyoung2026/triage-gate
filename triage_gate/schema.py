@@ -1,30 +1,30 @@
-"""Triage-gate schemas — the team contract.
+"""Triage-gate schemas (post-simplification).
 
-Six pydantic models cover the full pipeline:
+Four primary models:
 
-    RawReport          unstructured input as it arrives
-    ExtractedReport    intake_agent output (fields + field_sources + raw preserved)
-    SpecialistOpinion  one specialist's judgment (severity / risk / completeness)
-    TriagePacket       final decision handed to downstream (fix / human / support / pm)
-    Trace              full reasoning trail — rules, opinions, overrides
-    OutcomeRecord      downstream feedback — what actually happened to the packet
+    RawReport        unstructured input as it arrives
+    ProductContext   product-specific facts (critical_paths, known_limitations, ...)
+    Analysis         one LLM call output — extraction + all judgment dimensions
+    TriagePacket     final downstream contract (issue_kind / severity / route)
 
-Specialists write to SpecialistOpinion subtypes; the synthesizer merges them into
-a TriagePacket, and the decide layer applies hard rule overrides on top. Trace
-preserves every intermediate artifact so the evolve loop can learn from both
-agreement and disagreement.
+Plus Trace (audit trail) and OutcomeRecord (future feedback).
+
+This version collapses the previous 4-LLM pipeline (intake + severity + risk +
+completeness + synthesizer + decide) into a single `analyze()` call that
+produces an Analysis, followed by a programmatic `gate()` that applies rules
+and critical_path safety floors and builds the final TriagePacket.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Literal, Optional, Union
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
 # ─────────────────────────────────────────────────────────────────────────────
-# enums as Literal types — easier for LLM structured output than Enum classes
+# enums as Literal types
 # ─────────────────────────────────────────────────────────────────────────────
 
 SourceKind = Literal["github_issue", "email", "chat", "ocr", "slack", "unknown"]
@@ -60,7 +60,7 @@ RiskFlag = Literal[
     "unclear_scope",
 ]
 
-SpecialistName = Literal["severity", "risk", "completeness"]
+InfoSufficiency = Literal["low", "medium", "high"]
 
 DownstreamOutcome = Literal[
     "fixed_merged",
@@ -78,12 +78,7 @@ DownstreamOutcome = Literal[
 
 
 class RawReport(BaseModel):
-    """A bug report in whatever shape it arrived.
-
-    `raw_text` is the single source of truth. Everything else is metadata the
-    intake layer may or may not have. Rules on raw run directly against
-    `raw_text` so they remain robust to intake extraction failures.
-    """
+    """A bug report in whatever shape it arrived. `raw_text` is the source of truth."""
 
     report_id: str
     source_kind: SourceKind = "unknown"
@@ -94,58 +89,7 @@ class RawReport(BaseModel):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. ExtractedReport — intake_agent output
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-class ExtractedFields(BaseModel):
-    """Fields the intake agent tries to populate. Any of these may be missing.
-
-    `preliminary_issue_kind` is set by intake_agent after reading the raw text
-    plus product_context (scope + limitations + glossary). It drives the
-    synthesizer's fast-path routing for non-bug reports.
-    """
-
-    preliminary_issue_kind: IssueKind = "bug"
-    title: Optional[str] = None
-    body: Optional[str] = None
-    reproduction_steps: list[str] = Field(default_factory=list)
-    observed_result: Optional[str] = None
-    expected_result: Optional[str] = None
-    stack_trace: Optional[str] = None
-    affected_area: Optional[str] = None
-    frequency_hint: Optional[str] = None
-    user_impact_hint: Optional[str] = None
-
-
-class FieldSource(BaseModel):
-    """Provenance for one extracted field.
-
-    `stated` means the reporter wrote it explicitly. `inferred` means intake
-    guessed from context — downstream specialists should treat this as weaker
-    evidence than stated, and completeness_agent may count inferred fields
-    toward `missing_fields` when rigor is needed.
-    """
-
-    status: FieldStatus
-    quote: Optional[str] = None
-    confidence: float = Field(ge=0.0, le=1.0, default=0.0)
-
-
-class ExtractedReport(BaseModel):
-    """Intake_agent output. `raw_text` is preserved so specialists can re-read."""
-
-    report_id: str
-    raw_text: str
-    source_kind: SourceKind
-    language: Optional[str] = None
-    fields: ExtractedFields
-    field_sources: dict[str, FieldSource] = Field(default_factory=dict)
-    intake_notes: list[str] = Field(default_factory=list)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 2b. ProductContext — product-specific facts loaded once at startup
+# 2. ProductContext — product-specific facts
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -169,15 +113,7 @@ class PrecedentCase(BaseModel):
 
 
 class ProductContext(BaseModel):
-    """Product facts that every specialist reads a tailored subset of.
-
-    Source-role split so tokens stay bounded and specialists don't cross-interpret:
-        intake       → scope_summary + known_limitations + domain_glossary
-        severity     → critical_paths + scope_summary
-        risk         → critical_paths (risk_flags) + known_limitations
-        completeness → scope_summary only
-        evolve       → everything + rules.py + outcome_log
-    """
+    """Product facts — loaded once at startup, fed to analyze() via prompt."""
 
     product_name: str
     version: str
@@ -194,54 +130,85 @@ class ProductContext(BaseModel):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. SpecialistOpinion — one specialist's output
+# 3. Analysis — single LLM call output
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-class _SpecialistBase(BaseModel):
-    """Common fields every specialist must produce."""
+class ExtractedFields(BaseModel):
+    """Structured fields extracted from raw text. Any may be missing."""
 
-    specialist: SpecialistName
-    rationale: list[str] = Field(min_length=1, max_length=4)
-    confidence: float = Field(ge=0.0, le=1.0)
+    title: Optional[str] = None
+    body: Optional[str] = None
+    reproduction_steps: list[str] = Field(default_factory=list)
+    observed_result: Optional[str] = None
+    expected_result: Optional[str] = None
+    stack_trace: Optional[str] = None
+    affected_area: Optional[str] = None
+    frequency_hint: Optional[str] = None
+    user_impact_hint: Optional[str] = None
 
 
-class SeverityOpinion(_SpecialistBase):
-    specialist: Literal["severity"] = "severity"
-    severity: Severity
+class FieldSource(BaseModel):
+    """Provenance for one extracted field: stated / inferred / missing."""
+
+    status: FieldStatus
+    quote: Optional[str] = None
+    confidence: float = Field(ge=0.0, le=1.0, default=0.0)
+
+
+class FieldSourceMap(BaseModel):
+    """Typed per-field provenance. Strict structured outputs need every key upfront."""
+
+    title: Optional[FieldSource]
+    body: Optional[FieldSource]
+    reproduction_steps: Optional[FieldSource]
+    observed_result: Optional[FieldSource]
+    expected_result: Optional[FieldSource]
+    stack_trace: Optional[FieldSource]
+    affected_area: Optional[FieldSource]
+    frequency_hint: Optional[FieldSource]
+    user_impact_hint: Optional[FieldSource]
+
+
+class Analysis(BaseModel):
+    """One LLM call produces this. Replaces intake + 3 specialists + synthesizer.
+
+    The gate() function in gate.py converts this to a TriagePacket by applying
+    programmatic safety floors (rules keywords + critical_path floors).
+    """
+
+    language: Optional[str]
+    preliminary_issue_kind: IssueKind
+
+    # Extraction
+    fields: ExtractedFields
+    field_sources: FieldSourceMap
+    intake_notes: list[str]
+
+    # Severity judgment
+    severity_call: Severity
+    severity_rationale: list[str]
     impact_summary: str
 
+    # Adversarial risk scan
+    detected_risks: list[RiskFlag]
+    risk_rationale: list[str]
 
-class RiskOpinion(_SpecialistBase):
-    specialist: Literal["risk"] = "risk"
-    risk_flags: list[RiskFlag] = Field(default_factory=list)
-    escalation_reason: Optional[str] = None
+    # Completeness
+    info_sufficiency: InfoSufficiency
+    missing_fields: list[str]
 
-
-class CompletenessOpinion(_SpecialistBase):
-    specialist: Literal["completeness"] = "completeness"
-    missing_fields: list[str] = Field(default_factory=list)
-    inferred_fields: list[str] = Field(default_factory=list)
-    info_sufficiency: Literal["low", "medium", "high"]
-
-
-SpecialistOpinion = Annotated[
-    Union[SeverityOpinion, RiskOpinion, CompletenessOpinion],
-    Field(discriminator="specialist"),
-]
+    # The model's own doubts — becomes the human-review signal.
+    self_concerns: list[str]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. TriagePacket — final decision contract
+# 4. TriagePacket — downstream contract
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 class TriagePacket(BaseModel):
-    """The contract handed to downstream systems.
-
-    Anything consumed by fix/human/support/pm lanes must come from this packet.
-    Free-form reasoning belongs in `Trace`, not here.
-    """
+    """The final output handed to downstream systems (fix / human / support / pm)."""
 
     report_id: str
     issue_kind: IssueKind
@@ -255,59 +222,37 @@ class TriagePacket(BaseModel):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. Trace — full reasoning trail
+# 5. Trace — audit trail for viz + evolve loop
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-class SynthesizerDecision(BaseModel):
-    """Programmatic synthesizer output — merges specialist opinions.
-
-    `agreement_score` and `conflicts` are the signal the evolve loop watches
-    most closely: disagreement between specialists often predicts downstream
-    relabeling.
-    """
-
-    agreement_score: float = Field(ge=0.0, le=1.0)
-    conflicts: list[str] = Field(default_factory=list)
-    chosen_severity: Severity
-    chosen_issue_kind: IssueKind
-    chosen_route: Route
-    reasoning_notes: list[str] = Field(default_factory=list)
-
-
 class Trace(BaseModel):
-    """Every intermediate artifact produced while triaging one report."""
+    """Everything produced while triaging one report — feeds Streamlit and evolve."""
 
     report_id: str
     raw: RawReport
-    extracted: ExtractedReport
     product_context_version: str
+    analysis: Analysis
     rule_flags_raw: list[RiskFlag] = Field(default_factory=list)
-    rule_flags_extracted: list[str] = Field(default_factory=list)
-    specialist_opinions: list[SpecialistOpinion] = Field(default_factory=list)
-    synthesizer_decision: SynthesizerDecision
-    overrides_applied: list[str] = Field(default_factory=list)
+    severity_upgrades: list[str] = Field(default_factory=list)
+    conflicts: list[str] = Field(default_factory=list)
+    agreement_score: float = Field(ge=0.0, le=1.0)
     final_packet: TriagePacket
     timings_ms: dict[str, float] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.now)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 6. OutcomeRecord — downstream feedback for the evolve loop
+# 6. OutcomeRecord — downstream feedback for the future evolve loop
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 class OutcomeRecord(BaseModel):
-    """What actually happened to a triage packet downstream.
-
-    The evolve_agent reads a stream of these alongside the matching Trace to
-    propose rule/prompt diffs. `delta_from_original` makes supervision signals
-    cheap to compute: any non-empty delta is a disagreement worth studying.
-    """
+    """What actually happened to a triage packet downstream. Unused in v1."""
 
     report_id: str
     original_packet: TriagePacket
-    trace_ref: Optional[str] = None  # path or id of the matching Trace artifact
+    trace_ref: Optional[str] = None
     human_decision_by: Optional[str] = None
     final_issue_kind: Optional[IssueKind] = None
     final_severity: Optional[Severity] = None

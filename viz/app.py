@@ -1,15 +1,14 @@
-"""Streamlit viz for triage-gate traces.
+"""Streamlit viz for triage-gate traces (post-simplification).
 
 Run:
     streamlit run viz/app.py
 
 Reads Trace JSON files from ../traces/ and renders:
-  1. Single trace view — the three-specialist panel + synthesizer decision trail
+  1. Single trace view — extraction + 4-dimension analysis + severity upgrade trail
   2. Bucket overview — how reports distributed across routes
 
-Design principle: every visual element must be able to change a reviewer's
-decision. Agreement gauge, conflict chips, field provenance icons, and the
-decision trail all map to specific levers the reviewer can pull.
+Trace shape is the new one from schema.Trace (single `analysis` block, not
+three specialist opinions).
 """
 
 from __future__ import annotations
@@ -57,116 +56,97 @@ STATUS_ICON = {
 
 @st.cache_data
 def load_traces(trace_dir_str: str) -> list[dict]:
-    """Load raw trace dicts so Streamlit's cache can pickle them safely."""
     traces_dir = Path(trace_dir_str)
     out: list[dict] = []
     for path in sorted(traces_dir.glob("*.json")):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-            Trace.model_validate(data)  # validate only; we pass dicts forward
+            Trace.model_validate(data)
             out.append(data)
         except (ValidationError, json.JSONDecodeError):
             continue
     return out
 
 
-def _specialist(opinions: list[dict], name: str) -> dict | None:
-    for op in opinions:
-        if op.get("specialist") == name:
-            return op
-    return None
-
-
 def render_single_trace(trace: dict) -> None:
     packet = trace["final_packet"]
-    synth = trace["synthesizer_decision"]
-    extracted = trace["extracted"]
+    analysis = trace["analysis"]
 
     st.markdown(f"## {trace['report_id']}")
     st.caption(
         f"source: {trace['raw']['source_kind']} · "
-        f"language: {extracted.get('language') or '—'} · "
+        f"language: {analysis.get('language') or '—'} · "
         f"product_context: `{trace['product_context_version']}`"
     )
 
-    # Raw text — always visible
     with st.container(border=True):
         st.markdown("**raw text**")
         st.text(trace["raw"]["raw_text"])
 
-    # Intake panel
+    # Intake (extraction) block
     with st.expander("intake extraction", expanded=False):
         c1, c2 = st.columns([1, 2])
         with c1:
             st.markdown(
-                f"**preliminary_issue_kind**: `{extracted['fields']['preliminary_issue_kind']}`"
+                f"**preliminary_issue_kind**: `{analysis['preliminary_issue_kind']}`"
             )
-            st.markdown(f"**language**: `{extracted.get('language') or '—'}`")
+            st.markdown(f"**language**: `{analysis.get('language') or '—'}`")
         with c2:
             st.markdown("**field provenance**")
-            for name, src in extracted.get("field_sources", {}).items():
+            for name, src in analysis.get("field_sources", {}).items():
+                if src is None:
+                    continue
                 icon = STATUS_ICON.get(src["status"], "?")
                 quote = f' — *{src["quote"]}*' if src.get("quote") else ""
                 st.markdown(f"- {icon} `{name}`: {src['status']}{quote}")
 
-    # Three specialist panel
-    st.markdown("### 3-specialist panel")
-    sev = _specialist(trace["specialist_opinions"], "severity")
-    risk = _specialist(trace["specialist_opinions"], "risk")
-    comp = _specialist(trace["specialist_opinions"], "completeness")
-
-    c1, c2, c3 = st.columns(3)
+    # Four dimensions of the analyze() output
+    st.markdown("### analyze — 4 dimensions from one LLM call")
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
         with st.container(border=True):
             st.markdown("#### severity")
-            if sev:
-                st.markdown(
-                    f"### {SEVERITY_BADGE.get(sev['severity'], sev['severity'])}"
-                )
-                st.caption(f"confidence: {sev['confidence']}")
-                st.markdown(f"*{sev['impact_summary']}*")
-                for r in sev["rationale"]:
-                    st.markdown(f"- {r}")
+            st.markdown(
+                f"### {SEVERITY_BADGE.get(analysis['severity_call'], analysis['severity_call'])}"
+            )
+            st.caption(f"*{analysis['impact_summary']}*")
+            for r in analysis["severity_rationale"]:
+                st.markdown(f"- {r}")
     with c2:
         with st.container(border=True):
             st.markdown("#### risk")
-            if risk:
-                if risk["risk_flags"]:
-                    chips = " ".join(f"`{f}`" for f in risk["risk_flags"])
-                    st.markdown(f"### {chips}")
-                else:
-                    st.markdown("### *no flags*")
-                st.caption(f"confidence: {risk['confidence']}")
-                if risk.get("escalation_reason"):
-                    st.markdown(f"*{risk['escalation_reason']}*")
-                for r in risk["rationale"]:
-                    st.markdown(f"- {r}")
+            if analysis["detected_risks"]:
+                chips = " ".join(f"`{f}`" for f in analysis["detected_risks"])
+                st.markdown(f"### {chips}")
+            else:
+                st.markdown("### *no flags*")
+            for r in analysis["risk_rationale"]:
+                st.markdown(f"- {r}")
     with c3:
         with st.container(border=True):
             st.markdown("#### completeness")
-            if comp:
-                suff = comp["info_sufficiency"]
-                badge = {"high": "🟢 high", "medium": "🟡 medium", "low": "🔴 low"}
-                st.markdown(f"### {badge.get(suff, suff)}")
-                st.caption(f"confidence: {comp['confidence']}")
-                if comp.get("missing_fields"):
-                    st.markdown(
-                        "**missing**: "
-                        + ", ".join(f"`{m}`" for m in comp["missing_fields"])
-                    )
-                if comp.get("inferred_fields"):
-                    st.markdown(
-                        "**inferred**: "
-                        + ", ".join(f"`{f}`" for f in comp["inferred_fields"])
-                    )
-                for r in comp["rationale"]:
-                    st.markdown(f"- {r}")
+            suff = analysis["info_sufficiency"]
+            badge = {"high": "🟢 high", "medium": "🟡 medium", "low": "🔴 low"}
+            st.markdown(f"### {badge.get(suff, suff)}")
+            if analysis["missing_fields"]:
+                st.markdown(
+                    "**missing**: "
+                    + ", ".join(f"`{m}`" for m in analysis["missing_fields"])
+                )
+    with c4:
+        with st.container(border=True):
+            st.markdown("#### self_concerns")
+            if analysis["self_concerns"]:
+                for c in analysis["self_concerns"]:
+                    st.warning(c, icon="🤔")
+            else:
+                st.success("no concerns", icon="✅")
 
-    # Synthesizer
-    st.markdown("### synthesizer")
+    # Gate layer — what the programmatic safety did on top of the LLM call
+    st.markdown("### gate — programmatic safety layer")
     c1, c2 = st.columns([1, 3])
     with c1:
-        score = synth["agreement_score"]
+        score = trace["agreement_score"]
         st.metric("agreement", f"{score:.2f}")
         if score < 0.6:
             st.error("low")
@@ -175,21 +155,16 @@ def render_single_trace(trace: dict) -> None:
         else:
             st.success("high")
     with c2:
-        if synth["conflicts"]:
-            st.markdown("**conflicts**")
-            for c in synth["conflicts"]:
+        if trace["severity_upgrades"]:
+            st.markdown("**severity upgrades**")
+            for u in trace["severity_upgrades"]:
+                st.info(u, icon="⬆️")
+        if trace["conflicts"]:
+            st.markdown("**conflicts / concerns**")
+            for c in trace["conflicts"]:
                 st.warning(c, icon="⚠️")
-        else:
-            st.success("no conflicts", icon="✅")
-
-    st.markdown("**decision trail**")
-    for note in synth["reasoning_notes"]:
-        st.markdown(f"- {note}")
-
-    if trace["overrides_applied"]:
-        st.markdown("**hard overrides (decide layer)**")
-        for o in trace["overrides_applied"]:
-            st.error(o)
+        if not trace["severity_upgrades"] and not trace["conflicts"]:
+            st.success("no upgrades, no conflicts", icon="✅")
 
     # Final packet
     st.markdown("### → final packet")
@@ -202,9 +177,7 @@ def render_single_trace(trace: dict) -> None:
         st.markdown(f"## {SEVERITY_BADGE.get(packet['severity'], packet['severity'])}")
     with c3:
         st.markdown("**route**")
-        st.markdown(
-            f"## {ROUTE_EMOJI.get(packet['route'], '⚫')} `{packet['route']}`"
-        )
+        st.markdown(f"## {ROUTE_EMOJI.get(packet['route'], '⚫')} `{packet['route']}`")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -227,7 +200,6 @@ def render_single_trace(trace: dict) -> None:
         for r in packet["rationale"]:
             st.markdown(f"- {r}")
 
-    # Timings (small, bottom)
     timings = trace.get("timings_ms", {})
     if timings:
         parts = [f"{k}: {v:.0f}ms" for k, v in timings.items()]
@@ -246,7 +218,6 @@ def render_buckets(traces: list[dict]) -> None:
         st.markdown("**by route**")
         for route, n in by_route.most_common():
             st.markdown(f"- {ROUTE_EMOJI.get(route, '⚫')} `{route}`: **{n}**")
-        # Gate-health signal
         auto_fix_ratio = by_route.get("auto_fix", 0) / max(len(traces), 1)
         if auto_fix_ratio > 0.3:
             st.error(
@@ -265,7 +236,6 @@ def render_buckets(traces: list[dict]) -> None:
     rows = []
     for t in traces:
         p = t["final_packet"]
-        s = t["synthesizer_decision"]
         rows.append(
             {
                 "report_id": t["report_id"],
@@ -273,30 +243,32 @@ def render_buckets(traces: list[dict]) -> None:
                 "severity": p["severity"],
                 "route": p["route"],
                 "risk_flags": ", ".join(p["risk_flags"]),
-                "agreement": s["agreement_score"],
-                "conflicts": len(s["conflicts"]),
+                "agreement": t["agreement_score"],
+                "upgrades": len(t["severity_upgrades"]),
+                "conflicts": len(t["conflicts"]),
                 "human_review": "✓" if p["needs_human_review"] else "",
             }
         )
     df = pd.DataFrame(rows)
     st.dataframe(df, width="stretch", hide_index=True)
 
-    # Conflict surface — anything worth investigating
-    flagged = [t for t in traces if t["synthesizer_decision"]["conflicts"]]
+    flagged = [t for t in traces if t["conflicts"] or t["severity_upgrades"]]
     if flagged:
-        st.markdown("## reports with conflicts")
+        st.markdown("## reports with upgrades or conflicts")
         st.caption("these are the reports the evolve_agent will study first")
         for t in flagged:
             with st.container(border=True):
                 st.markdown(f"**{t['report_id']}** — {t['final_packet']['route']}")
-                for c in t["synthesizer_decision"]["conflicts"]:
+                for u in t["severity_upgrades"]:
+                    st.markdown(f"- ⬆️ {u}")
+                for c in t["conflicts"]:
                     st.markdown(f"- ⚠️ {c}")
 
 
 def main() -> None:
     st.set_page_config(page_title="triage-gate", layout="wide")
     st.title("triage-gate")
-    st.caption("multi-agent bug triage panel · codex hackathon demo")
+    st.caption("one LLM analyze + programmatic safety gate · codex hackathon demo")
 
     traces = load_traces(str(TRACES_DIR))
     if not traces:

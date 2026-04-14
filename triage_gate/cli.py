@@ -3,30 +3,23 @@
 Usage:
     python -m triage_gate run <report.json>
     python -m triage_gate run-all <reports_dir>
+    python -m triage_gate evolve
 
 Each run produces a Trace JSON at traces/<report_id>.json and prints a short
-summary to stdout. Traces are the input to the Streamlit viz.
+summary to stdout. Traces are the input to the Streamlit viz and evolve loop.
 """
 
 from __future__ import annotations
 
 import argparse
-import concurrent.futures as cf
 import json
 import sys
 import time
 from pathlib import Path
 
-from triage_gate.decide import decide
-from triage_gate.intake import intake
-from triage_gate.rules import detect_risk_flags_on_raw
+from triage_gate.analyze import analyze
+from triage_gate.gate import gate
 from triage_gate.schema import ProductContext, RawReport, Trace
-from triage_gate.specialists import (
-    completeness_agent,
-    risk_agent,
-    severity_agent,
-)
-from triage_gate.synthesize import synthesize
 
 DEFAULT_CONTEXT = "data/product_context.json"
 DEFAULT_TRACES_DIR = "traces"
@@ -43,37 +36,23 @@ def run_one(
     timings: dict[str, float] = {}
 
     t0 = time.perf_counter()
-    extracted = intake(raw, ctx)
-    timings["intake_ms"] = (time.perf_counter() - t0) * 1000
-
-    rule_flags_raw = detect_risk_flags_on_raw(raw.raw_text)
+    analysis = analyze(raw, ctx)
+    timings["analyze_ms"] = (time.perf_counter() - t0) * 1000
 
     t0 = time.perf_counter()
-    with cf.ThreadPoolExecutor(max_workers=3) as pool:
-        f_sev = pool.submit(severity_agent, extracted, ctx)
-        f_risk = pool.submit(risk_agent, extracted, ctx)
-        f_comp = pool.submit(completeness_agent, extracted, ctx)
-        sev_op = f_sev.result()
-        risk_op = f_risk.result()
-        comp_op = f_comp.result()
-    timings["specialists_parallel_ms"] = (time.perf_counter() - t0) * 1000
-
-    t0 = time.perf_counter()
-    synth = synthesize(extracted, sev_op, risk_op, comp_op, rule_flags_raw, ctx)
-    packet, overrides = decide(synth, sev_op, risk_op, comp_op, extracted)
-    timings["synth_decide_ms"] = (time.perf_counter() - t0) * 1000
+    result = gate(raw, analysis, ctx)
+    timings["gate_ms"] = (time.perf_counter() - t0) * 1000
 
     trace = Trace(
         report_id=raw.report_id,
         raw=raw,
-        extracted=extracted,
         product_context_version=ctx.version,
-        rule_flags_raw=rule_flags_raw,
-        rule_flags_extracted=[],
-        specialist_opinions=[sev_op, risk_op, comp_op],
-        synthesizer_decision=synth,
-        overrides_applied=overrides,
-        final_packet=packet,
+        analysis=analysis,
+        rule_flags_raw=result.rule_flags_raw,
+        severity_upgrades=result.severity_upgrades,
+        conflicts=result.conflicts,
+        agreement_score=result.agreement_score,
+        final_packet=result.packet,
         timings_ms=timings,
     )
 
@@ -85,7 +64,6 @@ def run_one(
 
 def print_summary(trace: Trace) -> None:
     p = trace.final_packet
-    s = trace.synthesizer_decision
     print(f"── {trace.report_id} ──")
     print(f"  issue_kind:         {p.issue_kind}")
     print(f"  severity:           {p.severity}")
@@ -94,15 +72,15 @@ def print_summary(trace: Trace) -> None:
     print(f"  bug_confidence:     {p.bug_confidence}")
     print(f"  risk_flags:         {p.risk_flags}")
     print(f"  missing_fields:     {p.missing_fields}")
-    print(f"  agreement_score:    {s.agreement_score}")
-    if s.conflicts:
+    print(f"  agreement_score:    {trace.agreement_score}")
+    if trace.severity_upgrades:
+        print("  severity upgrades:")
+        for u in trace.severity_upgrades:
+            print(f"    • {u}")
+    if trace.conflicts:
         print("  conflicts:")
-        for c in s.conflicts:
+        for c in trace.conflicts:
             print(f"    • {c}")
-    if trace.overrides_applied:
-        print("  hard overrides:")
-        for o in trace.overrides_applied:
-            print(f"    • {o}")
     print("  timings:")
     for k, v in trace.timings_ms.items():
         print(f"    {k}: {v:.0f} ms")
@@ -116,31 +94,6 @@ def cmd_run(args) -> int:
         return 1
     trace = run_one(report_path, ctx, Path(args.traces_dir))
     print_summary(trace)
-    return 0
-
-
-def cmd_evolve(args) -> int:
-    from triage_gate.evolve import analyze, load_traces
-
-    traces_dir = Path(args.traces_dir)
-    if not traces_dir.exists():
-        print(f"error: traces dir not found: {traces_dir}", file=sys.stderr)
-        return 1
-    traces = load_traces(traces_dir)
-    if not traces:
-        print(f"error: no traces in {traces_dir}", file=sys.stderr)
-        return 1
-    print("# evolve_agent report")
-    print()
-    print(f"*{len(traces)} traces analyzed*")
-    print()
-    suggestions = analyze(traces)
-    if not suggestions:
-        print("No improvement patterns detected in this batch.")
-        return 0
-    for s in suggestions:
-        print(s)
-        print()
     return 0
 
 
@@ -166,10 +119,35 @@ def cmd_run_all(args) -> int:
     return 1 if failures else 0
 
 
+def cmd_evolve(args) -> int:
+    from triage_gate.evolve import analyze_traces, load_traces
+
+    traces_dir = Path(args.traces_dir)
+    if not traces_dir.exists():
+        print(f"error: traces dir not found: {traces_dir}", file=sys.stderr)
+        return 1
+    traces = load_traces(traces_dir)
+    if not traces:
+        print(f"error: no traces in {traces_dir}", file=sys.stderr)
+        return 1
+    print("# evolve_agent report")
+    print()
+    print(f"*{len(traces)} traces analyzed*")
+    print()
+    suggestions = analyze_traces(traces)
+    if not suggestions:
+        print("No improvement patterns detected in this batch.")
+        return 0
+    for s in suggestions:
+        print(s)
+        print()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="triage-gate",
-        description="Bug report triage gate — multi-agent panel + synthesizer.",
+        description="Bug report triage gate — single LLM analyze + programmatic gate.",
     )
     subs = parser.add_subparsers(dest="command", required=True)
 

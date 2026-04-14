@@ -1,0 +1,6 @@
+{
+  "report_id": "BR-007",
+  "source_kind": "slack",
+  "raw_text": "🚨 긴급! 지금 저희 팀 5명 전원이 Mirror 로그인이 안 됩니다. 다들 'Session expired, please sign in again' 메시지만 계속 뜨고 로그인 버튼 눌러도 똑같은 화면으로 돌아옵니다. 방금 전 10분 전까지 멀쩡히 쓰고 있었는데 갑자기 전체가 막혔어요. 비밀번호 맞는지도 확인했고 incognito도 해봤는데 소용없습니다.",
+  "metadata": {"reporter": "teamlead@bigcorp.io", "plan": "enterprise", "affected_users": 5}
+}

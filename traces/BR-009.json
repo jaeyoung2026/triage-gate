@@ -1,0 +1,141 @@
+{
+  "report_id": "BR-009",
+  "raw": {
+    "report_id": "BR-009",
+    "source_kind": "chat",
+    "raw_text": "안 돼요ㅠㅠ",
+    "language": null,
+    "metadata": {
+      "reporter": "anonymous"
+    },
+    "received_at": null
+  },
+  "product_context_version": "2026.04.14-seed",
+  "analysis": {
+    "language": "ko",
+    "preliminary_issue_kind": "insufficient_info",
+    "fields": {
+      "title": null,
+      "body": "안 돼요ㅠㅠ",
+      "reproduction_steps": [],
+      "observed_result": null,
+      "expected_result": null,
+      "stack_trace": null,
+      "affected_area": null,
+      "frequency_hint": null,
+      "user_impact_hint": null
+    },
+    "field_sources": {
+      "title": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "body": {
+        "status": "stated",
+        "quote": "안 돼요ㅠㅠ",
+        "confidence": 1.0
+      },
+      "reproduction_steps": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "observed_result": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "expected_result": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "stack_trace": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "affected_area": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "frequency_hint": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      },
+      "user_impact_hint": {
+        "status": "missing",
+        "quote": null,
+        "confidence": 0.0
+      }
+    },
+    "intake_notes": [
+      "Report is too brief to take definitive action, and it's not clear what specifically '안 돼요ㅠㅠ' refers to."
+    ],
+    "severity_call": "unknown",
+    "severity_rationale": [
+      "There is insufficient information to determine the severity."
+    ],
+    "impact_summary": "The report is too brief and lacks context or specifics, making it impossible to assess impact.",
+    "detected_risks": [
+      "insufficient_repro",
+      "unclear_scope"
+    ],
+    "risk_rationale": [
+      "Report does not contain enough information to determine the issue, leading to uncertain reproduction and scope."
+    ],
+    "info_sufficiency": "low",
+    "missing_fields": [
+      "title",
+      "reproduction_steps",
+      "observed_result",
+      "expected_result",
+      "stack_trace",
+      "affected_area",
+      "frequency_hint",
+      "user_impact_hint"
+    ],
+    "self_concerns": [
+      "severity may be too low — impact scope unclear from raw text",
+      "report may match a known limitation I cannot fully verify"
+    ]
+  },
+  "rule_flags_raw": [],
+  "severity_upgrades": [],
+  "conflicts": [
+    "LLM raised flags rules did not: ['insufficient_repro', 'unclear_scope']",
+    "self_concern: severity may be too low — impact scope unclear from raw text",
+    "self_concern: report may match a known limitation I cannot fully verify"
+  ],
+  "agreement_score": 1.0,
+  "final_packet": {
+    "report_id": "BR-009",
+    "issue_kind": "insufficient_info",
+    "bug_confidence": 0.2,
+    "severity": "unknown",
+    "route": "needs_more_info",
+    "rationale": [
+      "There is insufficient information to determine the severity."
+    ],
+    "missing_fields": [
+      "title",
+      "reproduction_steps",
+      "observed_result",
+      "expected_result",
+      "stack_trace",
+      "affected_area",
+      "frequency_hint",
+      "user_impact_hint"
+    ],
+    "risk_flags": [],
+    "needs_human_review": true
+  },
+  "timings_ms": {
+    "analyze_ms": 3203.621332999319,
+    "gate_ms": 0.029832939617335796
+  },
+  "created_at": "2026-04-14T17:21:04.319565"
+}

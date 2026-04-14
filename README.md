@@ -1,60 +1,48 @@
 # triage-gate
 
-멀티 에이전트 버그 리포트 triage 게이트. 비정형 리포트를 읽고, 3명의 specialist가 병렬로 판단한 뒤, 제품 컨텍스트 기반 severity floor를 적용해서 **TriagePacket** (issue_kind / severity / route)을 내놓는다.
+버그 리포트 triage 게이트. 비정형 리포트를 한 번의 LLM 호출로 5차원(추출 / issue_kind / severity / risk / completeness)으로 분석하고, 제품 컨텍스트와 키워드 규칙으로 구성된 **프로그래매틱 안전 게이트**를 통과시켜 **TriagePacket** (issue_kind / severity / route)을 내놓는다.
 
-단순한 "버그 분류기"가 아니라, downstream 시스템이 그대로 사용할 수 있는 **triage packet 생성기**다. 라벨 하나가 아니라 판정 근거·위험 플래그·완전성·합의 점수·하드 오버라이드 내역까지 포함한 구조화 출력을 생성한다.
+단순한 "버그 분류기"가 아니라, downstream 시스템이 그대로 사용할 수 있는 **triage packet 생성기**다. 라벨 하나가 아니라 판정 근거·위험 플래그·완전성·severity 상향 내역·self_concerns까지 포함한 구조화 출력을 생성한다.
 
 ## 설계 원칙
 
 - **비정형 입력**: GitHub issue, 이메일, 채팅, OCR, 한두 줄 한국어 제보 — 아무 모양이나 받는다
-- **다각도 검증**: severity / risk / completeness 3명의 specialist가 각각 좁은 프롬프트로 **병렬** 판단. 불일치 자체가 신호 → `agreement_score` 하락 + `needs_human_review=true`
-- **프로그래매틱 + LLM 하이브리드**: 규칙(rules.py)은 이름 붙일 수 있는 위험을 잡고, LLM은 이름 붙일 수 없는 맥락을 잡는다. 규칙이 **robust floor** 역할
-- **source-role 분할**: 각 specialist가 제품 컨텍스트의 **필요한 부분만** 본다. 토큰 예산 억제 + 해석 충돌 방지
-- **product context 기반 진화**: `critical_paths`·`known_limitations`를 config로 분리. 같은 프레임워크라도 제품 설정만 바꾸면 분류 결과가 달라진다
-- **진화 루프**: `evolve_agent`가 trace를 읽고 config/rules diff를 제안. 자동 적용 금지, 사람이 승인
+- **LLM이 판단, 프로그램이 가드**: 한 LLM 호출이 모든 판단 차원을 한꺼번에 낸다. 그 뒤 프로그래매틱 gate가 안전 플로어(키워드 rules + critical_path)를 적용한다. severity는 **절대 downgrade 안 됨 — LLM이 내놓은 값은 floor, 규칙·제품 컨텍스트가 ceiling이 되어 필요시 올린다**
+- **제품 컨텍스트가 결정을 바꾼다**: 같은 LLM, 같은 프레임워크라도 `product_context.json`의 `critical_paths`·`known_limitations`만 바꾸면 다른 제품의 triage로 작동
+- **자기 의심 → 사람 검토 신호**: LLM이 자기 답변에 대한 `self_concerns`를 함께 출력하고, 이것이 0개가 아니면 `needs_human_review=true`. 합의 점수는 rules↔LLM 불일치에서 파생
+- **evolve 루프**: `evolve_agent`가 trace를 읽고 config/rules diff를 제안. 자동 적용 금지, 사람이 승인
 
-## 파이프라인 전체 흐름
+## 파이프라인
 
 ```
 RawReport (비정형 텍스트)
    │
-   ├─► rules_on_raw  (프로그래매틱: 키워드 → risk 플래그, 결정론적 floor)
+   ├─► analyze  (LLM 1회 호출, 구조화 출력)
+   │     - 필드 추출 + field_sources (stated / inferred / missing)
+   │     - preliminary_issue_kind (bug / feature_request / support_question / duplicate / insufficient_info)
+   │     - 적대적 risk 스캔 (detected_risks)
+   │     - severity_call + severity_rationale
+   │     - info_sufficiency (high / medium / low)
+   │     - self_concerns (모델의 자기 의심)
    │
-   ├─► intake_agent  (LLM small)
-   │     │  - 필드 추출 + field_sources (stated / inferred / missing)
-   │     │  - preliminary_issue_kind (bug / feature_request / support_question / duplicate / insufficient_info)
-   │     │  - ProductContext: scope + known_limitations + glossary
-   │     ▼
-   │   ExtractedReport
+   ├─► gate  (프로그래매틱, LLM 아님)
+   │     - 비-bug fast path (feature_request → pm, support_question → support, ...)
+   │     - severity 상향 1: 위험 플래그 floor (rules ∪ LLM danger flags)
+   │     - severity 상향 2: critical_path severity floor (제품 컨텍스트)
+   │     - route 매트릭스 (severity × danger × info_sufficiency)
+   │     - 하드 invariant (S0/S1 → human_engineer 강제, danger → auto_fix 금지)
+   │     - agreement_score = Jaccard(LLM, rules) − self_concern 패널티
+   │     - needs_human_review = self_concerns ∨ danger ∨ {S0/S1/unknown} ∨ agreement<0.6
    │
-   ├─► 3 specialists 병렬 실행 (LLM)
-   │     ├─ severity_agent     ← critical_paths + scope
-   │     ├─ risk_agent         ← critical_paths(risk_flags) + known_limitations (adversarial)
-   │     └─ completeness_agent ← scope_summary만
+   ├─► TriagePacket (downstream 계약)
    │
-   ├─► synthesize  (프로그래매틱, LLM 아님)
-   │     │  - Layer A  : 비-bug fast path (feature_request → pm 등)
-   │     │  - Layer B  : severity (specialist 판단)
-   │     │  - Layer B' : 위험 플래그 → severity upgrade
-   │     │  - Layer B'': critical_path severity floor (product_context가 결정 바꾸는 지점)
-   │     │  - Layer C  : route 매트릭스 (severity × danger × info_sufficiency)
-   │     │  - Layer D  : agreement_score (3 specialist 일치도)
-   │     │  - Layer E  : conflict 리스트
-   │     ▼
-   │   SynthesizerDecision
-   │
-   ├─► decide  (프로그래매틱 하드 오버라이드, defense in depth)
-   │     │  - S0/S1 → human_engineer 강제
-   │     │  - danger flag → auto_fix 금지
-   │     │  - needs_human_review 결정
-   │     ▼
-   │   TriagePacket  (downstream 계약)
-   │
-   └─► Trace (모든 중간 산출물 보존)
+   └─► Trace (전체 산출물 보존)
          │
-         ├─► traces/<id>.json  (Streamlit viz + evolve_agent 입력)
-         └─► evolve_agent → rules/product_context diff 제안
+         ├─► traces/<id>.json   (Streamlit viz + evolve_agent 입력)
+         └─► evolve_agent       (rules / product_context diff 제안)
 ```
+
+**LLM 호출은 1회**. 나머지는 전부 결정론적 함수다. 이것이 이 버전(simplified)의 핵심 특징.
 
 ## 요구사항
 
@@ -108,27 +96,30 @@ EOF
   severity:           S0
   route:              human_engineer
   needs_human_review: True
-  bug_confidence:     0.72
-  risk_flags:         ['payment', 'outage']
-  missing_fields:     ['reproduction_steps', 'expected_result']
-  agreement_score:    0.8
+  bug_confidence:     0.0
+  risk_flags:         ['outage', 'payment']
+  missing_fields:     ['title', 'expected_result', 'stack_trace']
+  agreement_score:    0.0
+  severity upgrades:
+    • critical path ['payment_checkout'] matched (severity already ≥ floor)
+  conflicts:
+    • LLM raised flags rules did not: ['outage']
+    • Rules raised flags LLM did not: ['payment']
+    • self_concern: severity may be too low — impact scope unclear from raw text
   timings:
-    intake_ms: 6646 ms
-    specialists_parallel_ms: 2273 ms
-    synth_decide_ms: 0 ms
+    analyze_ms: 6319 ms
+    gate_ms: 0 ms
 ```
 
 전체 Trace는 `traces/BR-100.json`에 저장된다 (Streamlit viz와 evolve_agent의 입력).
 
 ### 2) 배치 triage
 
-`data/reports/` 디렉토리의 모든 `*.json`을 돌린다.
-
 ```bash
 .venv/bin/python -m triage_gate run-all data/reports
 ```
 
-5개 샘플 리포트가 포함되어 있다:
+10개 샘플 리포트가 포함되어 있다:
 
 | id | source | 기대 결과 |
 |---|---|---|
@@ -137,6 +128,11 @@ EOF
 | BR-003 | chat | `support_question / unknown / support` (known_limitation 매칭) |
 | BR-004 | chat | `bug / S2 / needs_more_info` (tooltip, settings_save 오탐) |
 | BR-005 | github_issue | `bug / S1 / human_engineer` (auth session, user_auth critical path) |
+| BR-006 | github_issue | `bug / S1 / human_engineer` (CSV export 0바이트, data_export floor) |
+| BR-007 | slack (ko) | `bug / S1 / human_engineer` (팀 5명 로그인 불가, user_auth floor) |
+| BR-008 | email | `bug / S0 / human_engineer` (cross-workspace 멤버 leak, security) |
+| BR-009 | chat (ko) | `insufficient_info / unknown / needs_more_info` ("안 돼요ㅠㅠ") |
+| BR-010 | email (ko) | `support_question / unknown / support` (결제 후 영수증 미도착) |
 
 ### 3) Streamlit 시각화
 
@@ -148,8 +144,8 @@ EOF
 
 **두 가지 뷰**:
 
-- **single trace**: 하나의 리포트에 대해 raw 원문 → intake 추출 (field_sources 포함) → 3-specialist 병렬 판단 → synthesizer 결정 trail → 최종 packet 까지를 한 화면에서 본다. `agreement_score` 게이지, `conflicts` 칩, decision trail이 왜 이 route가 선택됐는지 역추적 가능하게 한다.
-- **bucket overview**: 모든 trace를 route/issue_kind/severity 버킷으로 분포 표시. `auto_fix` 비율이 30%를 넘으면 경고 (gate가 너무 느슨). conflict가 있는 trace를 별도 섹션으로 모아서 evolve_agent가 학습할 패턴을 강조.
+- **single trace**: raw 원문 → intake 추출 (field_sources 포함) → analyze의 4-차원 출력(severity/risk/completeness/self_concerns) → gate의 severity 상향 내역 → 최종 packet 까지를 한 화면에서 본다. `agreement_score` 게이지, severity upgrade 칩, conflict 칩, self_concerns 경고가 왜 이 route가 선택됐는지 역추적 가능하게 한다
+- **bucket overview**: 모든 trace를 route/issue_kind/severity 버킷으로 분포 표시. `auto_fix` 비율이 30%를 넘으면 경고. severity upgrade나 conflict가 있는 trace를 별도 섹션으로 모아서 evolve_agent가 학습할 패턴을 강조
 
 ### 4) evolve_agent — 진화 루프
 
@@ -159,23 +155,10 @@ EOF
 
 `traces/` 전체를 읽고 4가지 패턴을 감지해서 markdown 리포트를 출력한다:
 
-- **critical_path 키워드 false positive**: severity_agent가 S3이라고 부르고 danger flag도 없는데 critical_path floor가 발동한 케이스 → `product_context.json` 키워드 좁히라고 제안
-- **낮은 specialist 합의**: `agreement_score < 0.7`인 케이스 → specialist 프롬프트 재검토 제안
-- **하드 오버라이드 활동**: `decide.py` 오버라이드가 자주 발동하면 → synthesize 매트릭스로 승격 제안
-- **rules ↔ LLM 불일치**: 키워드 규칙과 risk_agent의 flag가 다른 경우 → `rules.py` `RISK_KEYWORDS` 확장/수축 제안
-
-실제 작동 예시 (5 trace 분석 결과):
-
-```
-### ⚠ critical_path keyword false-positive candidates (1)
-- **BR-004**: critical path ['settings_save'] forces floor S2 (was S3)
-**Target file**: data/product_context.json — narrow the `keywords` list
-
-### rules ↔ LLM risk-flag disagreement (2)
-- **BR-001**: LLM-only=['outage'], rules-only=∅
-- **BR-005**: LLM-only=['data_loss'], rules-only=∅
-**Target**: triage_gate/rules.py RISK_KEYWORDS dict
-```
+- **critical_path 키워드 false positive**: LLM이 `severity_call=S3`이라고 부르고 danger flag도 없는데 critical_path floor가 발동한 케이스 → `product_context.json` 키워드 좁히라고 제안
+- **낮은 agreement_score**: `agreement_score < 0.7`인 케이스 → analyze.py 프롬프트 재검토 또는 rules.py 키워드 조정 제안
+- **self_concerns 표면화**: 모델이 스스로 의심한 항목들 → 반복 패턴이면 프롬프트의 해당 STEP 보강 제안
+- **rules ↔ LLM 불일치**: 키워드 규칙과 LLM의 `detected_risks`가 다른 경우 → `rules.py` `RISK_KEYWORDS` 확장/수축 제안
 
 ## 제품 컨텍스트 설정
 
@@ -205,23 +188,13 @@ EOF
 }
 ```
 
-### source-role 분할 (누가 무엇을 보는가)
-
-| 소비자 | 보는 필드 | 보지 않는 필드 | 이유 |
-|---|---|---|---|
-| intake_agent | scope_summary, known_limitations, domain_glossary | critical_paths, precedent | 경계/용어/제외항목 알아야 feature_request·support 분별 |
-| severity_agent | critical_paths, scope_summary | glossary, precedent, limitations | 핵심 경로 floor만 있으면 된다 |
-| risk_agent | critical_paths(risk_flags), known_limitations | scope, glossary | 위험 플래그만 보면 된다 |
-| completeness_agent | scope_summary (짧게) | 나머지 전부 | 완전성 판정에 product 맥락은 거의 불필요 |
-| evolve_agent | **전부** + rules.py + trace 전체 | — | 오직 여기만 전면 조망 |
-
-토큰 예산이 specialist별로 분리되어 있어서 전체 프롬프트 크기가 선형 증가가 아니라 1.3~1.5배 수준에 머문다.
+**이 JSON만 수정하면 같은 코드베이스가 다른 제품의 triage로 작동**한다. 이게 설계의 핵심 가치다.
 
 ### 주요 설정 항목
 
 - **`critical_paths[].keywords`** — 원문(raw_text)과 매칭되는 키워드. 너무 넓으면 false positive (evolve_agent가 잡아낸다)
 - **`critical_paths[].default_severity_floor`** — 이 경로가 매칭되면 severity가 이 값 아래로 못 내려간다. `S0`, `S1`, `S2`, `S3`, `unknown` 중 하나
-- **`known_limitations`** — 자연어 문장. intake_agent가 읽고 매칭되는 리포트는 `support_question`으로 분류 (bug 아님)
+- **`known_limitations`** — 자연어 문장. analyze가 읽고 매칭되는 리포트는 `support_question`으로 분류 (bug 아님)
 
 ## 프로젝트 구조
 
@@ -240,42 +213,34 @@ triage-gate/
 ├── triage_gate/
 │   ├── __init__.py
 │   ├── __main__.py                 # python -m triage_gate ... 진입점
-│   ├── schema.py                   # 7 pydantic 모델 (팀 contract)
-│   ├── llm.py                      # OpenAI client + 모델 선택 + .env 로더
+│   ├── schema.py                   # 6 pydantic 모델 (팀 contract)
+│   ├── llm.py                      # OpenAI client + .env 자동 로더 + ANALYZE_MODEL
 │   ├── rules.py                    # 키워드 기반 risk flag + critical path 매칭
-│   ├── intake.py                   # LLM 레이어 #1 — 비정형 → ExtractedReport
-│   ├── specialists/
-│   │   ├── __init__.py
-│   │   ├── severity.py             # LLM #2 — 영향 크기 판단
-│   │   ├── risk.py                 # LLM #3 — adversarial 위험 스캔
-│   │   └── completeness.py         # LLM #4 — 정보 충분성 판정
-│   ├── synthesize.py               # 프로그래매틱 결정 매트릭스
-│   ├── decide.py                   # 프로그래매틱 하드 오버라이드
+│   ├── analyze.py                  # LLM 단일 호출 — raw → Analysis (5차원)
+│   ├── gate.py                     # 프로그래매틱 안전 게이트 → TriagePacket
 │   ├── evolve.py                   # 진화 루프 v1 (패턴 감지)
 │   └── cli.py                      # run / run-all / evolve 서브커맨드
 └── viz/
     └── app.py                      # Streamlit 앱
 ```
 
-## 스키마 (7 pydantic 모델)
+총 **9 파일** (simplification 이전 14 파일에서 축소: intake, 3 specialists, synthesize, decide 삭제 → analyze, gate 추가).
+
+## 스키마 (6 pydantic 모델)
 
 1. **`RawReport`** — 비정형 입력. `raw_text`가 single source of truth
-2. **`ExtractedReport`** — intake_agent 출력. 필드 + `field_sources` (stated/inferred/missing) + raw 원문 보존
-3. **`ProductContext`** — 제품 컨텍스트 (critical_paths, known_limitations, glossary, precedents)
-4. **`SpecialistOpinion`** — discriminated union of `SeverityOpinion` / `RiskOpinion` / `CompletenessOpinion`
-5. **`TriagePacket`** — downstream에 넘기는 최종 계약 (issue_kind, severity, route, risk_flags, rationale, needs_human_review)
-6. **`Trace`** — 하나의 리포트에 대한 모든 중간 산출물 (raw, extracted, specialist_opinions, synthesizer_decision, overrides, final_packet, timings)
-7. **`OutcomeRecord`** — downstream 피드백 (나중에 evolve_agent가 실제 label로 학습할 때 사용; 현재 v1은 conflict 기반)
+2. **`ProductContext`** — 제품 컨텍스트 (critical_paths, known_limitations, glossary, precedents)
+3. **`Analysis`** — **analyze() 한 번의 LLM 호출 출력**. extraction + severity + risk + completeness + self_concerns 모두 포함
+4. **`TriagePacket`** — downstream에 넘기는 최종 계약 (issue_kind, severity, route, risk_flags, rationale, needs_human_review)
+5. **`Trace`** — 하나의 리포트에 대한 모든 중간 산출물 (raw, analysis, rule_flags_raw, severity_upgrades, conflicts, agreement_score, final_packet, timings)
+6. **`OutcomeRecord`** — downstream 피드백 (v1은 사용 안 함, v2에서 사람 라벨 학습에 사용 예정)
 
 ## 환경 변수
 
 | 변수 | 기본값 | 설명 |
 |---|---|---|
 | `OPENAI_API_KEY` | — | **필수**. OpenAI API 키 |
-| `TRIAGE_INTAKE_MODEL` | `gpt-4o-mini` | intake_agent 모델 (추출만, 작은 모델로 충분) |
-| `TRIAGE_SEVERITY_MODEL` | `gpt-4o` | severity_agent 모델 (판단, 큰 모델) |
-| `TRIAGE_RISK_MODEL` | `gpt-4o` | risk_agent 모델 (adversarial, 큰 모델) |
-| `TRIAGE_COMPLETENESS_MODEL` | `gpt-4o-mini` | completeness_agent 모델 (구조적, 작은 모델) |
+| `TRIAGE_ANALYZE_MODEL` | `gpt-4o` | analyze LLM 호출 모델. 판단 작업이므로 기본값은 큰 모델 |
 
 ## 다른 제품에 적용하기
 
@@ -287,23 +252,45 @@ triage-gate/
 3. 첫 배치를 `run-all`로 돌린 뒤 `evolve`로 튜닝 제안 확인
 4. 제안대로 `product_context.json`/`rules.py` 수정 → 다시 실행 → 결과 변화 관찰
 
-**같은 코드베이스, config만 바꾸면 다른 제품의 triage로 작동**한다. 이게 이 설계의 핵심 가치.
-
 ## 아키텍처 결정 기록
 
-- **왜 multi-agent인가**: 한 모델에게 "severity + risk + completeness 모두 판단"시키면 한 필드 오류가 다른 필드에 전파된다. 좁은 프롬프트로 분리하면 정확도가 올라가고, 불일치가 검출 가능해진다
-- **왜 synthesizer가 LLM 아닌가**: 결정 매트릭스는 재현 가능해야 한다. 같은 입력 → 같은 출력이어야 디버깅/진화가 가능. LLM이 매트릭스까지 하면 설명 가능성 상실
-- **왜 decide 레이어가 분리되어 있는가**: defense in depth. synthesizer 매트릭스에 버그가 있어도 `S0 → human_engineer`, `danger flag → 절대 auto_fix 금지` 같은 **비양보 원칙**은 decide가 강제
-- **왜 `FieldSourceMap`이 `dict[str, FieldSource]` 아닌가**: OpenAI structured output의 strict mode는 dict의 임의 키를 허용하지 않음. 타입된 필드로 명시해야 한다
-- **왜 Streamlit인가**: 해커톤 3시간 시간 박스에서 3-컬럼 레이아웃 + 칩 + 데이터프레임 + 게이지를 모두 구현할 수 있는 유일한 선택지. 의사결정을 **바꾸는** viz에 집중 — 버킷 분포가 이상하면 바로 튜닝, conflict 칩이 빨갛게 뜨면 evolve_agent 실행
+### Why 1 LLM call instead of multi-agent?
+
+이전 버전은 4번의 LLM 호출(intake + severity_agent + risk_agent + completeness_agent)과 synthesize 매트릭스(7 layer) + decide 하드 오버라이드로 구성되어 있었다. 이유는 "좁은 프롬프트 × 다각도 검증 × 불일치가 신호"였다.
+
+**simplification v1에서 이것을 거절했다**. 이유:
+- 4 LLM 호출은 product_context가 3회 중복 로드되어 토큰 낭비 + 3 RTT 오버헤드
+- 3 specialist 사이의 "합의"는 실제로 대부분 동일 답변 — 견제가 이론만큼 강하지 않았다
+- completeness_agent가 하는 일은 `field_sources`에 의한 결정론적 계산이라 LLM이 필요 없었다 (실제로 지금은 프롬프트 안에서 같은 규칙을 적용하게 지시)
+- 7-layer 매트릭스는 머리에 안 들어오는 복잡성이고 synthesize/decide 분리는 "defense in depth" 라는 이론적 명분은 있었지만 실제 데이터에서 decide의 하드 오버라이드가 거의 발동하지 않아 중복 코드였음
+
+**단 하나의 LLM 호출이 대안**: 한 프롬프트 안에서 모델에게 "STEP 1 추출 → STEP 2 issue_kind → STEP 3 adversarial risk 스캔 → STEP 4 severity → STEP 5 completeness → STEP 6 self_concerns" 순서로 시키면, 좁은 프롬프트의 이점 대부분을 유지하면서 호출 수만 1/4로 줄어든다. 대신 최종 안전 보장은 프로그래매틱 gate가 맡는다.
+
+### Why programmatic gate instead of all-LLM?
+
+"LLM이 다 하면 gate도 LLM이 하면 되지 않나?"에 대한 답:
+
+- **안전 invariant는 결정론적이어야 한다**. "`payment` 키워드가 raw에 있으면 반드시 payment 플래그", "S0/S1은 반드시 human_engineer", "danger flag는 auto_fix 금지" 같은 규칙은 LLM의 기분에 맡길 일이 아니다.
+- **제품 사실은 코드 레벨 계약**. `critical_paths[].default_severity_floor: S0`는 "이 경로는 최소 S0이다"라는 제품의 선언이다. LLM이 이걸 무시하면 안 된다.
+- **재현 가능성**. 같은 입력 → 같은 출력이어야 디버깅과 evolve가 가능하다. gate는 순수 함수.
+- **evolve 학습 신호**. rules vs LLM의 불일치가 `conflicts`에 기록되어 evolve_agent의 학습 신호가 된다. 둘 다 LLM이면 이 신호가 사라진다.
+
+### Why severity can only go UP in gate?
+
+gate의 severity 조정 규칙은 **단방향 floor만 적용**. LLM이 내놓은 severity는 floor로 취급하고, rules/critical_path는 ceiling으로 작동해서 필요시 더 올린다.
+
+- 내리는 방향 조정은 위험하다. LLM이 S0이라고 판단한 걸 "rules는 payment 키워드 없으니 S2로 내려"라고 하면 실제 위험을 놓친다.
+- 올리는 방향은 안전하다. "rules는 payment 있으니 S3도 최소 S2로", "critical_path payment는 floor S0" 같은 것들은 안전 쪽으로 편향된다.
+
+**"rules는 이름 붙일 수 있는 위험을 잡고 LLM은 이름 붙일 수 없는 맥락을 잡는다"**는 하이브리드 원칙은 유지됐다. 다만 그 결합 방식이 "synthesizer가 재판정"에서 "LLM이 판정 + 프로그래매틱 floor"로 더 단순해졌다.
 
 ## v1 한계 / 알려진 이슈
 
-- **진화 루프 v1은 conflict 기반**: 실제 `OutcomeRecord`(사람이 라벨한 최종 결정)를 읽는 게 아니라, 같은 배치 안의 specialist 불일치만 본다. v2에서 outcome_log 도입 예정
+- **진화 루프 v1은 conflict 기반**: 실제 `OutcomeRecord`(사람이 라벨한 최종 결정)를 읽는 게 아니라, 같은 배치 안의 rules↔LLM 불일치와 self_concerns만 본다. v2에서 outcome_log 도입 예정
 - **precedent retrieval 없음**: `precedent_cases`는 현재 프롬프트에 주입되지 않음. v2에서 임베딩 기반 retrieval로 유사 케이스 few-shot 주입 예정
-- **중복 탐지 없음**: `duplicate` issue_kind는 정의만 있고 자동 탐지 로직 없음. 지금은 intake_agent가 강하게 편향 금지 원칙에 따라 거의 안 씀
-- **라우팅만 하고 실제 수정 안 함**: `auto_fix` 라우팅은 "이건 자동으로 고쳐도 된다"는 **판정**일 뿐. 실제 코드 수정/PR 생성은 별도 시스템의 일 (해커톤에서는 팀의 Fix/PR 담당자 몫)
-- **intake 지연**: `gpt-4o-mini`로도 평균 6초/건. 해커톤 50건/일 스케일에선 문제없지만 프로덕션 스케일에선 병목
+- **중복 탐지 없음**: `duplicate` issue_kind는 정의만 있고 자동 탐지 로직 없음
+- **라우팅만 하고 실제 수정 안 함**: `auto_fix` 라우팅은 "이건 자동으로 고쳐도 된다"는 **판정**일 뿐. 실제 코드 수정/PR 생성은 별도 시스템의 일
+- **analyze 지연**: `gpt-4o`로 평균 5초/건. 작은 모델로 바꾸면 더 빠르지만 판단 품질 trade-off 검증 필요
 
 ## 라이선스
 
@@ -311,4 +298,8 @@ MIT (또는 미정)
 
 ## 크레딧
 
-2026년 4월 13~14일 codex 해커톤 준비 세션에서 설계 및 구현. 멀티 에이전트 협력 원칙은 [mirror-mind](https://github.com/jaeyoung2026/mirror-mind)의 `AGENTS.md`에서 상속.
+2026년 4월 13~14일 codex 해커톤 준비 세션에서 설계 및 구현.
+- v0: multi-agent (4 LLM calls, 14 files)
+- v1: simplified (1 LLM call, 9 files) — 같은 안전 보장을 유지하면서 복잡도 40% 감소
+
+협력 원칙은 [mirror-mind](https://github.com/jaeyoung2026/mirror-mind)의 `AGENTS.md`에서 상속.
